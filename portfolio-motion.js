@@ -145,13 +145,15 @@
   const photography=link.matches('[data-photography-entry],.folder-fallback');
   if(!photography&&!link.closest('.orbit-card,.portfolio-next,.next-project'))return;
   if(warm.has(url.pathname))return warm.get(url.pathname);
+  let centralPhoto=null;
+  if(photography&&link.dataset.photoPreviews){try{const photos=JSON.parse(link.dataset.photoPreviews);let position=0;try{position=Number(sessionStorage.getItem('yuanlan-photo-position'))||0;}catch{}centralPhoto=new Image();centralPhoto.decoding='async';centralPhoto.fetchPriority='high';centralPhoto.src=photos[((Math.round(position)%photos.length)+photos.length)%photos.length];}catch{}}
   const promise=getView(url.href).then(async view=>{
    const image=view.doc.querySelector('.portfolio-page img,.case-cover img');if(image)await timeout(media.decode(image),30000);
    if(photography){
     // Prepare the script and central photograph without running a hidden GPU scene.
     if(!view.doc.querySelector('[data-inline-feature="photography"]')){const script=view.doc.createElement('link');script.rel='preload';script.as='script';script.href=view.win.PortfolioAssetMap.photography;view.doc.head.append(script);}
     const photos=JSON.parse(view.doc.querySelector('#photo-diary-data').textContent);let position=0;try{position=Number(sessionStorage.getItem('yuanlan-photo-position'))||0;}catch{}
-    const index=((Math.round(position)%photos.length)+photos.length)%photos.length,photo=new Image();photo.decoding='async';photo.fetchPriority='high';photo.src=photos[index].preview;await timeout(media.decode(photo),30000);
+    const index=((Math.round(position)%photos.length)+photos.length)%photos.length,photo=centralPhoto||new Image();photo.decoding='async';photo.fetchPriority='high';photo.src=photos[index].preview;await timeout(media.decode(photo),30000);
    }
    trim();
   }).catch(()=>{warm.delete(url.pathname);});
