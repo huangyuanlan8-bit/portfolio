@@ -142,13 +142,23 @@
   const url=new URL(link.href,win.location.href);if(url.origin!==location.origin||!route(url)||url.pathname===win.location.pathname||views.get(url.pathname)===activeView)return;
   // One hovered/focused project prepares one inert document and its first image.
   // Its offscreen boards, video, footer and effects remain dormant until revealed.
-  if(!link.closest('.orbit-card,.portfolio-next,.next-project'))return;
+  const photography=link.matches('[data-photography-entry],.folder-fallback');
+  if(!photography&&!link.closest('.orbit-card,.portfolio-next,.next-project'))return;
   if(warm.has(url.pathname))return warm.get(url.pathname);
-  const promise=getView(url.href).then(async view=>{const image=view.doc.querySelector('.portfolio-page img,.case-cover img');if(image)await timeout(media.decode(image),30000);trim();}).catch(()=>{warm.delete(url.pathname);});
+  const promise=getView(url.href).then(async view=>{
+   const image=view.doc.querySelector('.portfolio-page img,.case-cover img');if(image)await timeout(media.decode(image),30000);
+   if(photography){
+    // Prepare the script and central photograph without running a hidden GPU scene.
+    const script=view.doc.createElement('link');script.rel='preload';script.as='script';script.href=view.win.PortfolioAssetMap.photography;view.doc.head.append(script);
+    const photos=JSON.parse(view.doc.querySelector('#photo-diary-data').textContent);let position=0;try{position=Number(sessionStorage.getItem('yuanlan-photo-position'))||0;}catch{}
+    const index=((Math.round(position)%photos.length)+photos.length)%photos.length,photo=new Image();photo.decoding='async';photo.fetchPriority='high';photo.src=photos[index].preview;await timeout(media.decode(photo),30000);
+   }
+   trim();
+  }).catch(()=>{warm.delete(url.pathname);});
   warm.set(url.pathname,promise);return promise;
  }
  const warmDocument=(doc,win)=>{
-  const entry=target=>target.closest?.('a[href]');
+  const entry=target=>target.closest?.('a[href]')||(target.closest?.('[data-folder-host]')?doc.querySelector('[data-photography-entry]'):null);
   doc.addEventListener('pointerover',event=>{const link=entry(event.target);if(link)warmLink(link,win);},{passive:true});
   doc.addEventListener('focusin',event=>{const link=entry(event.target);if(link)warmLink(link,win);});
  };

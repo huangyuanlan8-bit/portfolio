@@ -9,7 +9,7 @@
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  let saved=0;try{saved=Number(sessionStorage.getItem('yuanlan-photo-position'))||0;}catch{}
  const state={position:saved,velocity:0,energy:0,time:0,idle:reduced.matches?0:1,drag:null,satDirty:true,flex:0,flexV:0,flow:0,hovers:new Map(),pointer:null};
- let layout,gl,renderer,raf=0,last=0,active=-1,frames=[],frameNumber=0,ready=false,suspended=false,frameCost=0,frameInterval=16.7,lastHoverX=null,lastHoverY=null,lastHoverPosition=null,lastHoverFrames=null;
+ let layout,gl,renderer,raf=0,last=0,active=-1,frames=[],frameNumber=0,ready=false,suspended=window.PortfolioRuntime?.isActive()===false,frameCost=0,frameInterval=16.7,lastHoverX=null,lastHoverY=null,lastHoverPosition=null,lastHoverFrames=null;
  const textures=new Map(),cols=48,rows=24;
  function updateCaption(index){index=math.wrap(index,count);if(active===index)return;active=index;root.querySelector('[data-photo-count]').textContent=`${String(index+1).padStart(2,'0')} / ${String(count).padStart(2,'0')}`;root.querySelector('[data-photo-caption]').textContent=label(photos[index].title);root.dataset.currentPhoto=index+1;}
  function openPhoto(index){const photo=photos[math.wrap(index,count)];state.velocity=0;state.drag=null;state.pointer=null;root.classList.remove('is-dragging');large.src=photo.full;large.alt=label(photo.title);dialog.querySelector('#photo-lightbox-title').textContent=label(photo.title);dialog.querySelector('[data-photo-details]').textContent=[label(photo.location),photo.year].filter(Boolean).join(' / ');dialog.showModal();close.focus();}
@@ -29,7 +29,7 @@
   let record=textures.get(index);if(record){record.last=frameNumber;return record;}
   const surface=document.createElement('canvas');surface.width=compact.matches?768:1024;surface.height=surface.width*800/1024;
   const rect=paintTexture(surface,index,null),texture=renderer.texture(surface);record={texture,rect,last:frameNumber,loaded:false};textures.set(index,record);
-  const image=new Image();image.onload=()=>{if(!textures.has(index))return;record.rect=paintTexture(surface,index,image);renderer.updateTexture(texture,surface);record.loaded=true;state.satDirty=true;};image.onerror=()=>{root.dataset.mediaError='true';root.dispatchEvent(new Event('portfolio:media'));};image.src=photos[index].preview;return record;
+  const image=new Image();image.onload=()=>{if(!textures.has(index))return;record.rect=paintTexture(surface,index,image);renderer.updateTexture(texture,surface);record.loaded=true;state.satDirty=true;};image.onerror=()=>{if(index===math.wrap(Math.round(state.position),count)){root.dataset.mediaError='true';root.dispatchEvent(new Event('portfolio:media'));}};image.decoding='async';image.fetchPriority=index===math.wrap(Math.round(state.position),count)?'high':'low';image.src=photos[index].preview;return record;
  }
  function resize(){layout=math.layout(root.clientWidth,root.clientHeight,compact.matches);state.satDirty=true;renderer?.resize(layout);}
  function hitFilm(point,photoOnly=false){
@@ -79,7 +79,7 @@
   if(frameNumber%120===0)for(const [index,record] of textures)if(record.last<frameNumber-120){gl.deleteTexture(record.texture);textures.delete(index);}
  }
  function tick(time){
-  raf=0;if(last)frameInterval+=((time-last)-frameInterval)*.1;const elapsed=last?Math.min((time-last)/1000,.04):1/60;last=time;
+  raf=0;if(suspended||document.hidden)return;if(last)frameInterval+=((time-last)-frameInterval)*.1;const elapsed=last?Math.min((time-last)/1000,.04):1/60;last=time;
   if(!dialog.open){
    // Fixed-size substeps keep the damped bend response stable after dropped frames.
    const steps=Math.ceil(elapsed/.012),dt=elapsed/steps;
@@ -107,7 +107,7 @@
   canvas.addEventListener('pointerup',event=>release(event));canvas.addEventListener('pointercancel',event=>release(event,true));canvas.addEventListener('lostpointercapture',event=>{if(state.drag?.id===event.pointerId){state.drag=null;state.velocity=0;root.classList.remove('is-dragging');}});
   root.addEventListener('wheel',event=>{if(dialog.open)return;event.preventDefault();const scale=event.deltaMode===1?16:event.deltaMode===2?layout.height:1,d=(Math.abs(event.deltaX)>Math.abs(event.deltaY)?event.deltaX:event.deltaY)*scale;state.velocity=clamp(state.velocity+clamp(d,-220,220)/layout.slot*7.5,-6,6);state.satDirty=true;},{passive:false});
   canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();cancelAnimationFrame(raf);ready=false;root.classList.remove('is-ready');root.dataset.renderer='native-strip';});
- }else{root.dataset.renderer='native-strip';const update=()=>{const centre=layout.width/2;let nearest=0,distance=Infinity;links.forEach((link,i)=>{const r=link.getBoundingClientRect(),d=Math.abs(r.left+r.width/2-centre),sat=math.saturation(r.left+r.width/2,layout.width,r.width);link.style.setProperty('--photo-gray',1-sat);if(d<distance){distance=d;nearest=i;}});updateCaption(nearest);};resize();fallback.addEventListener('scroll',update,{passive:true});update();}
+ }else{root.dataset.renderer='native-strip';const update=()=>{const centre=layout.width/2;let nearest=0,distance=Infinity;links.forEach((link,i)=>{const r=link.getBoundingClientRect();if(r.right>=-250&&r.left<=layout.width+250)window.PortfolioRuntime?.activateImage(link.querySelector('img'));const d=Math.abs(r.left+r.width/2-centre),sat=math.saturation(r.left+r.width/2,layout.width,r.width);link.style.setProperty('--photo-gray',1-sat);if(d<distance){distance=d;nearest=i;}});updateCaption(nearest);};resize();fallback.addEventListener('scroll',update,{passive:true});update();}
  if(!ready){const first=links[0]?.querySelector('img');const prepared=()=>{root.dataset.mediaReady='true';root.dispatchEvent(new Event('portfolio:media'));};if(first?.complete&&first.naturalWidth)prepared();else{first?.addEventListener('load',prepared,{once:true});first?.addEventListener('error',()=>{root.dataset.mediaError='true';root.dispatchEvent(new Event('portfolio:media'));},{once:true});}}
  addEventListener('portfolio:suspend',()=>{suspended=true;cancelAnimationFrame(raf);state.velocity=0;state.drag=null;state.pointer=null;last=0;try{sessionStorage.setItem('yuanlan-photo-position',String(math.wrap(state.position,count)));}catch{}});
  addEventListener('portfolio:resume',()=>{suspended=false;last=0;cancelAnimationFrame(raf);if(ready&&!document.hidden)raf=requestAnimationFrame(tick);});

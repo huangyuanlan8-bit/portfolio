@@ -16,17 +16,17 @@
  const mediaObserver=typeof IntersectionObserver==='function'?new IntersectionObserver(entries=>{
   if(!isActive())return;for(const entry of entries)if(entry.isIntersecting)activateMedia(entry.target);
  },{rootMargin:'250px 0px'}):null;
- for(const element of document.querySelectorAll('img[data-src],video[data-poster]')){media.add(element);mediaObserver?.observe(element);}
+ for(const element of document.querySelectorAll('img[data-src],video[data-poster]')){if(element.closest('.photo-fallback'))continue;media.add(element);mediaObserver?.observe(element);}
  function loadFeature(name){
   if(features.has(name))return features.get(name);
   const url=window.PortfolioAssetMap?.[name];if(!url)return Promise.reject(new Error(`Missing feature ${name}`));
-  const promise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=url;script.async=true;script.fetchPriority='low';script.onload=()=>resolve();script.onerror=()=>{features.delete(name);script.remove();reject(new Error(`Unable to load ${name}`));};document.head.append(script);});
+  const promise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=url;script.async=true;script.fetchPriority=name==='photography'?'high':'low';script.onload=()=>resolve();script.onerror=()=>{features.delete(name);script.remove();reject(new Error(`Unable to load ${name}`));};document.head.append(script);});
   features.set(name,promise);return promise;
  }
  function near(element,margin){const box=element.getBoundingClientRect();return box.bottom>=-margin&&box.top<=innerHeight+margin;}
  function check(){
   if(!isActive())return;
-  for(const element of media)if(near(element,250))activateMedia(element);
+  for(const element of media){const box=element.getBoundingClientRect();if(element.getClientRects().length&&box.right>=-250&&box.left<=innerWidth+250&&near(element,250))activateMedia(element);}
   for(const record of records)if(!record.started&&near(record.element,record.margin)){
    record.started=true;loadFeature(record.name).catch(error=>{record.started=false;console.warn('The accessible page remains available.',error);document.documentElement.classList.remove('journal-intro-pending');});
   }

@@ -11,7 +11,7 @@ async function bundle(name,files,loader='js'){
  const hash=createHash('sha256').update(result.code).digest('hex').slice(0,12),filename=`${name}-${hash}.${loader}`;
  await writeFile(new URL(filename,directory),result.code);manifest[name]=`/static/${filename}`;
 }
-await bundle('core',['runtime.js','gallery.js','gallery-atmosphere.js','site.js','awards.js','project-image-ready.js','cover-transition.js','portfolio-motion.js']);
+await bundle('core',['runtime.js','orbit-geometry.js','gallery.js','gallery-atmosphere.js','site.js','awards.js','project-image-ready.js','cover-transition.js','portfolio-motion.js']);
 await bundle('projects',['orbit-webgl.js','ink-fluid.js']);
 await bundle('experience',['badge-physics.js','badges.js']);
 await bundle('photography',['photo-film-math.js','photo-film-renderer.js','photography.js']);

@@ -15,6 +15,7 @@ const outputName = process.env.SITE_OUTPUT_DIR || 'dist';
 if (!['dist', 'cloudflare-pages.staging'].includes(outputName)) throw new Error('Unsupported generated output directory');
 const dist = path.join(root, outputName);
 const assets = JSON.parse(await readFile(path.join(root,'.build-assets','manifest.json'),'utf8'));
+const criticalStyles = await readFile(path.join(root,'.build-assets',assets.styles.slice(1)),'utf8');
 const heroLayout = JSON.parse(await readFile(path.join(root, 'hero-layout.json'), 'utf8'));
 const esc = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const tx = (v, lang) => esc(Array.isArray(v) ? v[lang === 'zh' ? 0 : 1] : v);
@@ -100,7 +101,7 @@ function service(l) {
 async function page(l, route, title, body, description) {
   const pagePath = path.join(dist,l,route,'index.html');
   await mkdir(path.dirname(pagePath), {recursive:true});
-  await writeFile(pagePath,renderPage({lang:l,route,title,description,header:header(l,route),body,footer:footer(l),assets}));
+  await writeFile(pagePath,renderPage({lang:l,route,title,description,header:header(l,route),body,footer:footer(l),assets,criticalStyles:route?'':criticalStyles}));
 }
 await mkdir(dist,{recursive:true});
 // Versioned, web-ready assets make a fresh Git checkout self-contained.
