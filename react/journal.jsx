@@ -5,6 +5,8 @@ import Folder from './Folder';
 import './Folder.css';
 import ContactFooter from './ContactFooter';
 import FoldText from './FoldText';
+import {gsap} from 'gsap';
+import {ScrollTrigger} from 'gsap/ScrollTrigger';
 
 function PhotographyFolder({host,items}){
  const [open,setOpen]=useState(false),[size,setSize]=useState(1),touch=useRef(false);
@@ -35,5 +37,13 @@ async function mount(){
  });
  if(contact)createRoot(contact).render(<ContactFooter/>);
  if(section){window.PortfolioJournalComponentsReady=true;document.dispatchEvent(new Event('journal:components-ready'));}
+ let paused=false;
+ const sync=()=>{
+  const visible=window.PortfolioRuntime?.isActive()!==false&&[section,contact].filter(Boolean).some(element=>{const r=element.getBoundingClientRect();return r.bottom>0&&r.top<innerHeight;});
+  if(!visible&&!paused){paused=true;ScrollTrigger.disable(false,false);gsap.ticker.sleep();}
+  else if(visible&&paused){paused=false;ScrollTrigger.enable();gsap.ticker.wake();}
+ };
+ const visibility=new IntersectionObserver(sync);[section,contact].filter(Boolean).forEach(element=>visibility.observe(element));
+ addEventListener('portfolio:suspend',sync);addEventListener('portfolio:resume',sync);document.addEventListener('visibilitychange',sync);sync();
 }
 mount().catch(error=>{console.warn('Journal keeps its regular text and photography link.',error);document.documentElement.classList.remove('journal-intro-pending');});

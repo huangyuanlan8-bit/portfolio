@@ -53,7 +53,7 @@ Pages 的单文件上限为 **25 MiB = 26,214,400 bytes**。
 
 ## 路由与上线验收
 
-项目详情在 `/{zh|en}/work/{slug}/index.html`，摄影在 `/{zh|en}/journal/photography/index.html`。Pages 原生匹配目录首页，能直接打开和刷新；无全局 SPA 重写。`pages-redirects` 在构建后变为 `_redirects`，根路径 `/` 指向 `/zh/`。真实 `404.html` 防止资源缺失时误返回首页。
+项目详情在 `/{zh|en}/work/{slug}/index.html`，摄影在 `/{zh|en}/journal/photography/index.html`。Pages 原生匹配目录首页，能直接打开和刷新；无全局 SPA 重写。`pages-redirects` 在构建后变为 `_redirects`，根路径 `/` 默认指向英文 `/en/`，中文保留在 `/zh/`。真实 `404.html` 防止资源缺失时误返回首页。
 
 `pages-headers` 构建为 `_headers`，允许项目转场使用同源 iframe，沿用 Pages 默认缓存策略。
 

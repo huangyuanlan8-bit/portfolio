@@ -5,8 +5,8 @@
   doc.addEventListener('click',event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;const link=event.target.closest?.('a[href]');if(!link||link.hasAttribute('download')||link.target==='_blank')return;const url=new URL(link.href,win.location.href);if(url.origin!==location.origin||!route(url))return;event.preventDefault();request(url.href,kindFor(link,doc),link,win);});
  }
  let parentShell;try{if(parent!==window&&parent.PortfolioTransitions?.isShell)parentShell=parent.PortfolioTransitions;}catch{}
- if(parentShell){install(document,window,(...args)=>parentShell.navigate(...args));parentShell.warmDocument(document,window);const base=document.createElement('base');base.target='_top';document.head.append(base);return;}
- const reduced=()=>matchMedia('(prefers-reduced-motion:reduce)').matches,views=new Map(),entries=new Map(),warm=new Map();let serial=0,busy=false,activeEntry,activeView,queuedPop=null,token=null,particles=false;
+ if(parentShell){install(document,window,(...args)=>parentShell.navigate(...args));parentShell.warmDocument(document,window);parentShell.documentReady?.(document,window);const base=document.createElement('base');base.target='_top';document.head.append(base);return;}
+ const reduced=()=>matchMedia('(prefers-reduced-motion:reduce)').matches,views=new Map(),entries=new Map(),warm=new Map(),opening=new Map(),readyFrames=new WeakMap();let serial=0,busy=false,activeEntry,activeView,queuedPop=null,token=null,particles=false;
  const nativeNodes=[...document.body.children];
  const native={id:'native',url:location.href,doc:document,win:window,frame:null,anims:[],used:0,title:document.title,lang:document.documentElement.lang,description:document.querySelector('meta[name="description"]')?.content};views.set(new URL(native.url).pathname,native);activeView=native;
  const initialId='entry-'+serial++;activeEntry={id:initialId,url:location.href,view:native,snapshot:null};entries.set(initialId,activeEntry);
@@ -19,7 +19,7 @@
  function cancelAnimations(view){view.anims.forEach(a=>a.cancel());view.anims=[];}
  function animate(view,selector,keyframes,options){for(const element of view.doc.querySelectorAll(selector)){const animation=element.animate(keyframes,{fill:'both',...options});view.anims.push(animation);}}
  function setNativeHidden(hidden){document.documentElement.classList.toggle('motion-native-hidden',hidden);for(const node of nativeNodes)if(!['SCRIPT','STYLE'].includes(node.tagName))node.inert=hidden;}
- function reveal(view){cancelAnimations(view);if(view.frame){view.frame.style.display='block';view.frame.style.visibility='visible';view.frame.style.opacity='1';view.frame.inert=false;}else setNativeHidden(false);view.win.dispatchEvent(new Event('portfolio:resume'));}
+ function reveal(view){view.frame?.removeAttribute('data-motion-preparing');cancelAnimations(view);if(view.frame){view.frame.style.display='block';view.frame.style.visibility='visible';view.frame.style.opacity='1';view.frame.inert=false;}else setNativeHidden(false);view.win.dispatchEvent(new Event('portfolio:resume'));}
  function conceal(view){view.win.dispatchEvent(new Event('portfolio:suspend'));if(view.frame){view.frame.inert=true;view.frame.style.display='none';}else setNativeHidden(true);}
  async function restore(view,snapshot,hash){
   if(view.frame){view.frame.style.display='block';view.frame.style.visibility='hidden';}else setNativeHidden(false);
@@ -29,36 +29,41 @@
   else view.win.scrollTo({top:0,behavior:'instant'});
   await raf();
  }
+ async function getView(url){
+  const key=new URL(url).pathname;if(views.has(key))return views.get(key);if(opening.has(key))return opening.get(key);
+  const promise=(async()=>{
+   const frame=document.createElement('iframe');frame.className='motion-view';frame.title='Portfolio page';frame.name='portfolio-view-'+serial++;frame.setAttribute('aria-label','Portfolio page');frame.setAttribute('data-motion-preparing','true');frame.inert=true;frame.style.visibility='hidden';
+   const view={id:frame.name,url,doc:null,win:null,frame,anims:[],snapshot:null,used:Date.now()};
+   const loaded=new Promise((resolve,reject)=>{
+    const ready=()=>{const doc=frame.contentDocument,win=frame.contentWindow;if(!doc?.querySelector('main')||!win?.PortfolioPage)return false;view.doc=doc;view.win=win;resolve();return true;};
+    readyFrames.set(frame,ready);frame.addEventListener('load',()=>{if(!ready())reject(new Error('This page is unavailable.'));},{once:true});frame.addEventListener('error',reject,{once:true});
+   });frame.src=url;document.body.append(frame);
+   try{await timeout(loaded,45000);view.title=view.doc.title;view.lang=view.doc.documentElement.lang;view.description=view.doc.querySelector('meta[name="description"]')?.content;}
+   catch(error){frame.remove();throw error;}finally{readyFrames.delete(frame);}
+   views.set(key,view);return view;
+  })();opening.set(key,promise);try{return await promise;}finally{opening.delete(key);}
+ }
  async function prepare(url,kind,popEntry){
-  const u=new URL(url),key=u.pathname;let view=views.get(key);
-  if(!view){
-   const frame=document.createElement('iframe');frame.className='motion-view';frame.title='Portfolio page';frame.name='portfolio-view-'+serial++;frame.setAttribute('aria-label','Portfolio page');frame.inert=true;frame.style.visibility='hidden';
-   view={id:frame.name,url,doc:null,win:null,frame,anims:[],snapshot:null,used:Date.now()};
-   const loaded=new Promise((resolve,reject)=>{frame.addEventListener('load',resolve,{once:true});frame.addEventListener('error',reject,{once:true});});frame.src=url;document.body.append(frame);
-   try{await timeout(loaded);view.doc=frame.contentDocument;view.win=frame.contentWindow;if(!view.doc?.querySelector('main')||!view.win.PortfolioPage)throw new Error('This page is unavailable.');view.title=view.doc.title;view.lang=view.doc.documentElement.lang;view.description=view.doc.querySelector('meta[name="description"]')?.content;await timeout(view.doc.fonts.ready);}
-   catch(error){frame.remove();throw error;}
-   views.set(key,view);
-  }
-  view.used=Date.now();cancelAnimations(view);
+  const u=new URL(url),view=await getView(url);view.used=Date.now();cancelAnimations(view);
   const explicitReturn=kind==='photo-back'||kind==='project-back',matchesSection=s=>s?.section===(kind==='photo-back'?'journal':'projects');let snapshot=popEntry?.snapshot||(explicitReturn&&matchesSection(view.snapshot)?view.snapshot:null);
   if(!snapshot&&explicitReturn){try{const saved=JSON.parse(sessionStorage.getItem('yuanlan-home-'+u.pathname.split('/')[1]));if(matchesSection(saved))snapshot=saved;}catch{}}
   await restore(view,snapshot,snapshot?null:u.hash);
   const hero=view.doc.querySelector('.portfolio-page img,.case-cover img');let heroReady=null;
   if(['cover','next'].includes(kind)&&!hero)throw new Error('This project has no prepared cover.');
-  if(hero)heroReady=await timeout(media.prepare(hero));
-  const gallery=view.doc.querySelector('[data-photo-diary]');if(gallery){view.win.dispatchEvent(new Event('portfolio:resume'));await new Promise((resolve,reject)=>{const check=()=>{if(gallery.dataset.mediaReady==='true'){cleanup();resolve();}else if(gallery.dataset.mediaError==='true'){cleanup();reject(new Error('A photograph could not be loaded.'));}};const cleanup=()=>{clearInterval(poll);clearTimeout(timer);gallery.removeEventListener('portfolio:media',check);};const poll=setInterval(check,40),timer=setTimeout(()=>{cleanup();reject(new Error('Photography preparation timed out.'));},15000);gallery.addEventListener('portfolio:media',check);check();});}
+  if(hero)heroReady=await timeout(media.prepare(hero),30000);
+  const gallery=view.doc.querySelector('[data-photo-diary]');if(gallery){view.win.dispatchEvent(new Event('portfolio:resume'));await new Promise((resolve,reject)=>{const check=()=>{if(gallery.dataset.mediaReady==='true'){cleanup();resolve();}else if(gallery.dataset.mediaError==='true'){cleanup();reject(new Error('A photograph could not be loaded.'));}};const cleanup=()=>{clearInterval(poll);clearTimeout(timer);gallery.removeEventListener('portfolio:media',check);};const poll=setInterval(check,40),timer=setTimeout(()=>{cleanup();reject(new Error('Photography preparation timed out.'));},30000);gallery.addEventListener('portfolio:media',check);check();});}
   return {view,hero,heroReady};
  }
  function sourceFor(link,win){if(!link)return null;const card=link.closest('.orbit-card');if(!card)return null;const captured=win.PortfolioCoverSource?.(card);if(captured)return captured;const image=card.querySelector('img'),rect=card.getBoundingClientRect();return image?{image,rect:{left:rect.left,top:rect.top,width:rect.width,height:rect.height}}:null;}
  function frameTitle(view){document.title=view.title;document.documentElement.lang=view.lang;if(view.description)document.querySelector('meta[name="description"]')?.setAttribute('content',view.description);if(view.frame)view.frame.title=view.title;}
- function announce(message,retry){
+ function announce(message,retry,loading=false){
   document.querySelector('.motion-status')?.remove();
-  const status=document.createElement('div');status.className='motion-status';status.setAttribute('role','alert');
+  const status=document.createElement('div');status.className='motion-status';status.setAttribute('role',loading?'status':'alert');if(loading)status.dataset.loading='true';
   const text=document.createElement('span');text.textContent=message;status.append(text);
   if(retry){const button=document.createElement('button');button.type='button';button.textContent=document.documentElement.lang.startsWith('zh')?'重试':'Retry';button.addEventListener('click',retry);status.append(button);}
   document.body.append(status);
  }
- function trim(){const candidates=[...views.entries()].filter(([,v])=>v.frame&&v!==activeView).sort((a,b)=>a[1].used-b[1].used);while(views.size>4&&candidates.length){const [key,view]=candidates.shift();conceal(view);view.frame.remove();views.delete(key);for(const entry of entries.values())if(entry.view===view)entry.view=null;}}
+ function trim(){const candidates=[...views.entries()].filter(([,v])=>v.frame&&v!==activeView).sort((a,b)=>a[1].used-b[1].used);while(views.size>4&&candidates.length){const [key,view]=candidates.shift();conceal(view);view.frame.remove();views.delete(key);warm.delete(key);for(const entry of entries.values())if(entry.view===view)entry.view=null;}}
  async function runAnimation(old,view,hero,kind,source,control,heroReady){
   const duration=reduced()?160:820;reveal(view);if(view.frame){view.frame.style.zIndex='1002';view.frame.style.opacity='0';}if(old.frame)old.frame.style.zIndex='1001';
   if(old.frame)old.frame.inert=true;if(view.frame)view.frame.inert=true;for(const node of nativeNodes)if(!['SCRIPT','STYLE'].includes(node.tagName))node.inert=true;
@@ -110,11 +115,11 @@
   }
   document.querySelector('.motion-status')?.remove();
   busy=true;const control=token={cancelled:false};document.documentElement.dataset.transitionBusy='true';document.documentElement.dataset.transitionKind=kind;
-  const old=activeView;if(!popEntry)activeEntry.url=location.href;activeEntry.snapshot=capture(old);let source,target;
+  const old=activeView;sourceFor(link,sourceWindow);link?.classList?.add('motion-pending');announce(document.documentElement.lang.startsWith('zh')?'正在准备首屏图片，当前页面仍可查看…':'Preparing the first image. Your current page stays visible…',null,true);old.win.dispatchEvent(new Event('portfolio:suspend'));performance.mark?.('portfolio:navigation-start');if(!popEntry)activeEntry.url=location.href;activeEntry.snapshot=capture(old);let source,target;
   try{
    const prepared=await prepare(url,kind,popEntry||returnEntry);target=prepared.view;if(control.cancelled)throw new Error('Navigation interrupted');
    if(target===old){reveal(old);return true;}
-   activeEntry.snapshot=capture(old);source=sourceFor(link,sourceWindow);document.documentElement.classList.add('motion-animating');
+   activeEntry.snapshot=capture(old);source=sourceFor(link,sourceWindow);document.querySelector('.motion-status')?.remove();link?.classList?.remove('motion-pending');performance.mark?.('portfolio:first-screen-ready');document.documentElement.classList.add('motion-animating');
    if(particles&&kind==='cover'&&link&&!reduced()){const rect=link.getBoundingClientRect();for(let i=0;i<9;i++){const dot=document.createElement('i');dot.className='motion-particle';dot.style.left=rect.left+rect.width*.5+'px';dot.style.top=rect.top+rect.height*.5+'px';document.body.append(dot);const a=dot.animate([{opacity:.8,transform:'translate(0,0)'},{opacity:0,transform:`translate(${Math.cos(i*2.4)*55}px,${Math.sin(i*2.4)*55}px)`}],{duration:420,easing:'ease-out'});a.finished.finally(()=>dot.remove());}}
    await runAnimation(old,target,prepared.hero,kind,source,control,prepared.heroReady);if(control.cancelled)throw new Error('Navigation interrupted');
    conceal(old);activeView=target;reveal(target);if(target.frame)setNativeHidden(true);else setNativeHidden(false);target.frame?.style.setProperty('z-index','1000');
@@ -127,19 +132,25 @@
    if(!target){const failed=views.get(parsed.pathname);if(failed?.frame&&failed!==old){failed.win?.dispatchEvent(new Event('portfolio:suspend'));failed.frame.remove();views.delete(parsed.pathname);}}
    reveal(old);if(old.frame)setNativeHidden(true);else setNativeHidden(false);old.win.PortfolioPage?.restore(activeEntry.snapshot);
    if(!control.cancelled){warm.delete(parsed.pathname);announce(document.documentElement.lang.startsWith('zh')?'首图暂时无法加载，已保留当前封面。请重试。':'The first image could not be prepared. Your current page is still available.',()=>navigate(url,kind,link,sourceWindow,popEntry));}return false;
-  }finally{busy=false;token=null;document.documentElement.classList.remove('motion-animating');delete document.documentElement.dataset.transitionBusy;delete document.documentElement.dataset.transitionProgress;if(queuedPop){const entry=queuedPop;queuedPop=null;requestAnimationFrame(()=>navigate(entry.url,activeView.doc.querySelector('[data-photo-diary]')?'photo-back':'fade',null,activeView.win,entry));}}
+  }finally{link?.classList?.remove('motion-pending');performance.mark?.('portfolio:navigation-end');busy=false;token=null;document.documentElement.classList.remove('motion-animating');delete document.documentElement.dataset.transitionBusy;delete document.documentElement.dataset.transitionProgress;if(queuedPop){const entry=queuedPop;queuedPop=null;requestAnimationFrame(()=>navigate(entry.url,activeView.doc.querySelector('[data-photo-diary]')?'photo-back':'fade',null,activeView.win,entry));}}
  }
- window.PortfolioTransitions={isShell:true,navigate,setParticles(value){particles=Boolean(value);},get particles(){return particles;},get busy(){return busy;}};
+ window.PortfolioTransitions={isShell:true,navigate,documentReady(doc,win){readyFrames.get(win.frameElement)?.();},setParticles(value){particles=Boolean(value);},get particles(){return particles;},get busy(){return busy;}};
  install(document,window,navigate);
  document.addEventListener('wheel',event=>{if(document.documentElement.classList.contains('motion-animating'))event.preventDefault();},{passive:false,capture:true});
  addEventListener('popstate',event=>{const entry=entries.get(event.state?.portfolioMotion);if(!entry){location.reload();return;}if(busy){queuedPop=entry;if(token)token.cancelled=true;return;}navigate(entry.url,entry.url.includes('/journal/photography/')?'photo':activeView.doc.querySelector('[data-photo-diary]')?'photo-back':entry.url.includes('#projects')?'project-back':'fade',null,activeView.win,entry);});
- async function warmLink(link,win){const url=new URL(link.href,win.location.href);if(url.origin!==location.origin||!route(url)||url.pathname===win.location.pathname)return;if(warm.has(url.pathname))return warm.get(url.pathname);const promise=fetch(url.href).then(async response=>{if(!response.ok)throw Error('prefetch');const doc=new DOMParser().parseFromString(await response.text(),'text/html'),image=doc.querySelector('.portfolio-page img');if(image){await timeout(media.prefetch(image,url));}else if(doc.querySelector('#photo-diary-data')){const photos=JSON.parse(doc.querySelector('#photo-diary-data').textContent);await Promise.all(photos.slice(0,3).map(p=>{const photo=new Image();photo.src=new URL(p.preview,url).href;return decode(photo);}));}}).catch(()=>{warm.delete(url.pathname);});warm.set(url.pathname,promise);return promise;}
- // Prefetch inside the active document and child views without changing their interaction.
- const warmDocument=(doc,win)=>{const entry=target=>target.closest?.('a[href]')||(target.closest?.('[data-folder-host]')?doc.querySelector('[data-photography-entry]'):null);doc.addEventListener('pointerover',event=>{const link=entry(event.target);if(link)warmLink(link,win);},{passive:true});doc.addEventListener('focusin',event=>{const link=entry(event.target);if(link)warmLink(link,win);});
-  const projects=doc.querySelector('#projects');
-  if(projects&&typeof win.IntersectionObserver==='function'){
-   const observer=new win.IntersectionObserver(items=>{if(!items.some(item=>item.isIntersecting))return;observer.disconnect();const links=[...projects.querySelectorAll('.orbit-card[href]')];let index=0;const worker=async()=>{while(index<links.length)await warmLink(links[index++],win);};worker();worker();},{rootMargin:'75% 0px',threshold:0});observer.observe(projects);
-  }
+ async function warmLink(link,win){
+  const url=new URL(link.href,win.location.href);if(url.origin!==location.origin||!route(url)||url.pathname===win.location.pathname||views.get(url.pathname)===activeView)return;
+  // One hovered/focused project prepares one inert document and its first image.
+  // Its offscreen boards, video, footer and effects remain dormant until revealed.
+  if(!link.closest('.orbit-card,.portfolio-next,.next-project'))return;
+  if(warm.has(url.pathname))return warm.get(url.pathname);
+  const promise=getView(url.href).then(async view=>{const image=view.doc.querySelector('.portfolio-page img,.case-cover img');if(image)await timeout(media.decode(image),30000);trim();}).catch(()=>{warm.delete(url.pathname);});
+  warm.set(url.pathname,promise);return promise;
+ }
+ const warmDocument=(doc,win)=>{
+  const entry=target=>target.closest?.('a[href]');
+  doc.addEventListener('pointerover',event=>{const link=entry(event.target);if(link)warmLink(link,win);},{passive:true});
+  doc.addEventListener('focusin',event=>{const link=entry(event.target);if(link)warmLink(link,win);});
  };
  warmDocument(document,window);window.PortfolioTransitions.warmDocument=warmDocument;
 })();

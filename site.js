@@ -59,7 +59,7 @@ if(isHome){
  history.scrollRestoration='manual';
  // Run after the browser's native fragment placement, including cached media/GPU setup.
  const initialRestore=()=>requestAnimationFrame(()=>requestAnimationFrame(()=>restorePage()));
- if(document.readyState==='complete')initialRestore();else addEventListener('load',initialRestore,{once:true});
+ if(document.readyState!=='loading')initialRestore();else addEventListener('DOMContentLoaded',initialRestore,{once:true});
  addEventListener('pageshow',event=>{if(event.persisted)restorePage(true);schedule();});
  addEventListener('pagehide',()=>save({y:scrollY,phase:ring?.phase||0,selected:ring?.selected||0,slug:cards[ring?.selected||0]?.dataset.projectSlug,section:activeSection,width:innerWidth}));
 }else history.scrollRestoration='auto';

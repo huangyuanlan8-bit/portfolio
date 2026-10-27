@@ -2,6 +2,7 @@
 (()=>{
  const section=document.querySelector('.experience-playground');if(!section||!window.BadgePhysics)return;
  const reduced=matchMedia('(prefers-reduced-motion:reduce)'),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ let suspended=!window.PortfolioRuntime?.isActive();
  let cursor={x:0,y:0,time:0,vx:0,vy:0,dx:0,dy:0};
  section.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;const now=performance.now(),dt=Math.max(.008,(now-cursor.time)/1000),fresh=now-cursor.time<180;cursor={x:e.clientX,y:e.clientY,time:now,dx:fresh?e.clientX-cursor.x:0,dy:fresh?e.clientY-cursor.y:0,vx:fresh?clamp((e.clientX-cursor.x)/dt,-2400,2400):0,vy:fresh?clamp((e.clientY-cursor.y)/dt,-1800,1800):0};},{capture:true,passive:true});
  const controllers=[...section.querySelectorAll('[data-badge-item]')].map((item,index)=>{
@@ -15,11 +16,11 @@
    item.dataset.motion=`${(body.x-physics.home.x).toFixed(2)},${(body.y-physics.home.y).toFixed(2)},${rz.toFixed(2)},${ry.toFixed(2)}`;item.dataset.hoverImpulses=String(impulses);item.dataset.velocity=`${physics.vx.toFixed(2)},${physics.vy.toFixed(2)},${physics.omega.toFixed(3)}`;
    if(physics.drag){const grip=physics.worldPoint(physics.drag.local),target=physics.drag.target;item.dataset.grabError=Math.hypot(grip.x-target.x,grip.y-target.y).toFixed(2);}else delete item.dataset.grabError;
   }
-  function tick(now){raf=0;if(!visible){last=0;return;}const elapsed=last?Math.min((now-last)/1000,.05):1/60;last=now;accumulator+=elapsed;let speed=0;while(accumulator>=physics.dt){speed=physics.step(now);const dt=physics.dt;yawV+=(-27*yaw-6*yawV)*dt;yaw+=yawV*dt;pitchV+=(-30*pitch-6*pitchV)*dt;pitch+=pitchV*dt;yaw=clamp(yaw,-.25,.25);pitch=clamp(pitch,-.18,.18);accumulator-=dt;}
+  function tick(now){raf=0;if(!visible||suspended||document.hidden){last=0;return;}const elapsed=last?Math.min((now-last)/1000,.05):1/60;last=now;accumulator+=elapsed;let speed=0;while(accumulator>=physics.dt){speed=physics.step(now);const dt=physics.dt;yawV+=(-27*yaw-6*yawV)*dt;yaw+=yawV*dt;pitchV+=(-30*pitch-6*pitchV)*dt;pitch+=pitchV*dt;yaw=clamp(yaw,-.25,.25);pitch=clamp(pitch,-.18,.18);accumulator-=dt;}
    draw();const angular=Math.abs(yawV)+Math.abs(pitchV),idle=now-lastInput>1000;if(!drag&&idle&&speed<2.3&&angular<.012)calm+=elapsed;else calm=0;
    if(calm>.6||reduced.matches&&!drag&&now-lastInput>700){item.dataset.physicsState='resting';last=0;accumulator=0;item.style.zIndex='';}else{item.dataset.physicsState=drag?'dragging':'settling';raf=requestAnimationFrame(tick);}
   }
-  function wake(){lastInput=performance.now();calm=0;if(visible&&!raf){last=0;raf=requestAnimationFrame(tick);}}
+  function wake(){lastInput=performance.now();calm=0;if(visible&&!suspended&&!document.hidden&&!raf){last=0;raf=requestAnimationFrame(tick);}}
   function impulse(vx,vy,spin=0,local=null){if(!physics||drag)return;const scale=reduced.matches?.22:1;physics.impulse(vx*scale,vy*scale,spin*.28*scale,local);yawV+=clamp(vx*.002,-.45,.45)*scale;pitchV+=clamp(-vy*.003,-.3,.3)*scale;impulses++;wake();}
   function measure(){width=stage.clientWidth;height=stage.clientHeight;badgeWidth=button.offsetWidth;badgeHeight=button.offsetHeight;neck=parseFloat(getComputedStyle(button).top)||badgeWidth*.2;const stacked=width<=700,tablet=!stacked&&width<=1000,cx=width*(stacked?.5:tablet?(index?.735:.265):(index?.675:.335)),restY=stacked?105+index*(badgeHeight+neck+55):Math.max(94,height*.86-badgeHeight-neck)+(index?8:0);physics=new window.BadgePhysics({x:cx,y:restY,width:badgeWidth,height:badgeHeight,neck,restAngle:(index?3.5:-3)*Math.PI/180,spread:badgeWidth*(stacked&&index?.85:.49),anchorY:-185,left:badgeWidth*.52+8,right:width-badgeWidth*.52-8});svg.setAttribute('viewBox',`0 0 ${width} ${height}`);item.dataset.ready='true';yaw=yawV=pitch=pitchV=0;draw();wake();}
   button.addEventListener('pointerenter',e=>{if(e.pointerType!=='mouse'||drag)return;hovering=true;const box=button.getBoundingClientRect(),offset=(e.clientX-(box.left+box.width/2))/box.width,recent=performance.now()-cursor.time<180,speed=recent?Math.hypot(cursor.vx,cursor.vy):0;if(!recent&&item.dataset.physicsState!=='resting')return;const direction=recent&&Math.abs(cursor.vx)>8?Math.sign(cursor.vx):(offset<0?1:-1),force=clamp(42+speed*.08,42,195);impulse(direction*force,-clamp(19+speed*.017,19,55),offset*.6);lastPush=performance.now();});
@@ -31,8 +32,11 @@
   button.addEventListener('keydown',e=>{button.classList.remove('is-pointer');if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown',' '].includes(e.key))return;e.preventDefault();impulse(e.key==='ArrowLeft'?-110:e.key==='ArrowRight'?110:35,e.key==='ArrowDown'?35:-65,.22);});
   button.addEventListener('click',e=>{if(e.detail===0)impulse(60,-40,.2);});
   measure();const observer=new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;if(visible)wake();else{cancelAnimationFrame(raf);raf=0;last=0;if(drag){physics.release(0,0,performance.now(),true);drag=null;button.classList.remove('is-dragging');section.classList.remove('badge-is-dragging');}}},{rootMargin:'80px'});observer.observe(stage);
-  return {measure,wake};
+  return {measure,wake,suspend(){cancelAnimationFrame(raf);raf=0;last=0;accumulator=0;if(drag)release({pointerId:drag.id},true);}};
  });
+ addEventListener('portfolio:suspend',()=>{suspended=true;controllers.forEach(c=>c.suspend());});
+ addEventListener('portfolio:resume',()=>{suspended=false;controllers.forEach(c=>c.wake());});
+ document.addEventListener('visibilitychange',()=>controllers.forEach(c=>document.hidden?c.suspend():!suspended&&c.wake()));
  let resizeFrame=0;new ResizeObserver(()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>controllers.forEach(c=>c.measure()));}).observe(section);
  reduced.addEventListener('change',()=>controllers.forEach(c=>{c.measure();c.wake();}));
 })();

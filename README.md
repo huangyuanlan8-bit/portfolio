@@ -58,7 +58,7 @@ Original high-resolution media remains in the owner's local material folders, ou
 
 ## Routing
 
-The site has a real `index.html` for every route; it is a multi-page static site. The root redirects to `/zh/`; `/en/` is the English home. Examples:
+The site has a real `index.html` for every route; it is a multi-page static site. The root redirects to the default English home `/en/`; Chinese remains available at `/zh/`. Examples:
 
 - `/en/work/care-meal/`
 - `/zh/work/other-work/`

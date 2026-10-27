@@ -5,28 +5,28 @@ import {projectFrames} from './site-data.mjs';
 const code=await readFile(new URL('./portfolio-motion.js',import.meta.url),'utf8');
 const mediaCode=await readFile(new URL('./project-image-ready.js',import.meta.url),'utf8');
 const until=async predicate=>{for(let i=0;i<1000&&!predicate();i++)await new Promise(setImmediate);assert.ok(predicate(),'Expected readiness stage was not reached');};
-function harness(reduced=false,start='http://test/en/#projects'){
+function harness(reduced=false,start='http://test/en/#projects',readyBeforeLoad=false){
  const logs=[],handlers={},frames=[],historyEntries=[];let mode='ok',clock=0,releaseDecode=null,releasePaint=null;
  class Element{
   constructor(tag='div'){this.tagName=tag.toUpperCase();this.style={opacity:'',setProperty(k,v){this[k]=v;}};this.dataset={};this.attrs={};this.inert=false;this.children=[];this.listeners={};this.classes=new Set();this.classList={add:(c)=>this.classes.add(c),remove:(c)=>this.classes.delete(c),toggle:(c,on)=>on?this.classes.add(c):this.classes.delete(c),contains:c=>this.classes.has(c)};}
-  setAttribute(k,v){this.attrs[k]=v;}hasAttribute(k){return k in this.attrs;}
+  setAttribute(k,v){this.attrs[k]=v;}removeAttribute(k){delete this.attrs[k];}hasAttribute(k){return k in this.attrs;}
   addEventListener(k,fn){this.listeners[k]=fn;}removeEventListener(k){delete this.listeners[k];}
-  append(e){this.children.push(e);e.parentNode=this;if(e.tagName==='IFRAME'){frames.push(e);const doc=makeDoc(e.src,mode);e.contentDocument=doc;e.contentWindow=doc.win;setImmediate(()=>e.listeners.load?.());}}
+  append(e){this.children.push(e);e.parentNode=this;if(e.tagName==='IFRAME'){frames.push(e);const doc=makeDoc(e.src,mode);e.contentDocument=doc;e.contentWindow=doc.win;doc.win.frameElement=e;setImmediate(()=>readyBeforeLoad?ctx.PortfolioTransitions.documentReady(doc,doc.win):e.listeners.load?.());}}
   remove(){this.removed=true;if(this.parentNode)this.parentNode.children=this.parentNode.children.filter(e=>e!==this);}
   animate(keyframes,options){logs.push({type:'animation',tag:this.tagName,keyframes,options});return {cancel(){},finish(){},finished:Promise.resolve()};}
   focus(){this.focused=true;}getBoundingClientRect(){return {left:40,top:420,width:1200,height:720};}
   getContext(){return {drawImage:()=>logs.push({type:'raster'})};}
  }
  function makeDoc(url,setting){
-  const doc={body:new Element('body'),head:new Element('head'),documentElement:new Element('html'),title:url.includes('/work/')?'Project':'Portfolio',fonts:{ready:Promise.resolve()},addEventListener(){},getElementById(){return new Element();}};
+  const doc={body:new Element('body'),head:new Element('head'),documentElement:new Element('html'),title:url.includes('/work/')?'Project':'Portfolio',fonts:{ready:readyBeforeLoad?new Promise(()=>{}):Promise.resolve()},addEventListener(){},getElementById(){return new Element();}};
   const main=new Element('main'),heading=new Element('h1'),hero=new Element('img');hero.complete=setting!=='image-error';hero.naturalWidth=1200;hero.naturalHeight=720;hero.decode=async()=>{logs.push({type:'decode-start',url,complete:hero.complete});if(setting==='image-error')throw Error('image failed');if(mode==='slow-decode')await new Promise(resolve=>{releaseDecode=resolve;});hero.complete=true;logs.push({type:'decoded',url});};doc.hero=hero;
   const gallery=url.includes('photography')?new Element('section'):null;if(gallery)gallery.dataset=setting==='photo-error'?{mediaError:'true'}:{mediaReady:'true'};
   const win={scrollY:1234,innerWidth:1280,location:new URL(url),scrollTo({top}){this.scrollY=top;},dispatchEvent(e){logs.push({type:e.type,url});}};
   if(setting!=='404')win.PortfolioPage={capture:()=>({y:win.scrollY,width:1280,phase:.73,selected:1}),restore:s=>{win.scrollY=s.y;logs.push({type:'restore',y:s.y,url});}};
-  doc.win=win;doc.body.children=[main];doc.documentElement.lang='en';doc.querySelector=selector=>selector==='main'?main:selector==='[data-photo-diary]'?gallery:selector==='meta[name="description"]'?{content:'description',setAttribute(){}}:selector.includes('portfolio-page img')?(url.includes('/work/')?hero:null):selector.includes('portfolio-heading h1')?heading:selector==='.motion-status'?null:main;
+  doc.win=win;doc.body.children=[main];doc.documentElement.lang='en';doc.querySelector=selector=>selector==='main'?main:selector==='[data-photo-diary]'?gallery:selector==='meta[name="description"]'?{content:'description',setAttribute(){}}:selector.includes('portfolio-page img')?(url.includes('/work/')?hero:null):selector.includes('portfolio-heading h1')?heading:selector==='.motion-status'?(doc.body.children.find(e=>e.className==='motion-status')||null):main;
   doc.querySelectorAll=selector=>selector==='iframe'?frames:selector.includes('h1')?[heading]:[main];return doc;
  }
- const doc=makeDoc(start,'ok'),ctx={document:doc,URL,Event,Promise,Map,WeakMap,Error,Boolean,Date,Math,Number,JSON,console,innerWidth:1280,devicePixelRatio:1,matchMedia:()=>({matches:reduced}),setTimeout:(fn,ms)=>{const t=setTimeout(fn,ms);t.unref();return t;},clearTimeout,setInterval,clearInterval,requestAnimationFrame:fn=>setImmediate(()=>fn(clock+=16.7)),addEventListener:(k,fn)=>{handlers[k]=fn;},fetch:()=>Promise.reject(Error('not needed')),sessionStorage:{getItem:()=>null}};
+ const doc=makeDoc(start,'ok'),ctx={document:doc,URL,Event,Promise,Map,WeakMap,Error,Boolean,Date,Math,Number,JSON,console,performance:{mark(){}},innerWidth:1280,devicePixelRatio:1,matchMedia:()=>({matches:reduced}),setTimeout:(fn,ms)=>{const t=setTimeout(fn,ms);t.unref();return t;},clearTimeout,setInterval,clearInterval,requestAnimationFrame:fn=>setImmediate(()=>fn(clock+=16.7)),addEventListener:(k,fn)=>{handlers[k]=fn;},fetch:()=>Promise.reject(Error('not needed')),sessionStorage:{getItem:()=>null}};
  ctx.window=ctx;ctx.parent=ctx;ctx.location=new URL(start);ctx.scrollY=1234;ctx.PortfolioPage=doc.win.PortfolioPage;ctx.dispatchEvent=()=>{};ctx.history={state:null,replaceState(s,_,url){this.state=s;ctx.location=new URL(url);historyEntries[0]={s,url};},pushState(s,_,url){this.state=s;ctx.location=new URL(url);historyEntries.push({s,url});}};
  ctx.PortfolioCoverTransition=args=>{logs.push({type:'cover',next:args.next,surface:args.targetSurface});return {canvas:new Element('div'),draw:t=>logs.push({type:'draw',t}),remove:()=>logs.push({type:'removed-cover'})};};
  doc.createElement=tag=>new Element(tag);vm.createContext(ctx);vm.runInContext(mediaCode,ctx);
@@ -35,6 +35,8 @@ function harness(reduced=false,start='http://test/en/#projects'){
  vm.runInContext(code,ctx);
  return {ctx,doc,logs,frames,historyEntries,set mode(v){mode=v;},get decodePending(){return Boolean(releaseDecode);},get paintPending(){return Boolean(releasePaint);},releaseDecode(){const resolve=releaseDecode;releaseDecode=null;mode='ok';resolve();},releasePaint(){const resolve=releasePaint;releasePaint=null;mode='ok';resolve();},async back(index=0){const entry=historyEntries[index];ctx.location=new URL(entry.url);handlers.popstate({state:entry.s});await until(()=>!ctx.PortfolioTransitions.busy);}};
 }
+const early=harness(false,'http://test/en/#projects',true);
+assert.equal(await early.ctx.PortfolioTransitions.navigate('http://test/en/work/care-meal/','cover'),true,'A mounted first screen can enter while window.load and noncritical fonts remain pending');
 for(const failure of ['404','image-error','photo-error']){
  const h=harness();h.mode=failure;const photo=failure==='photo-error',url=photo?'http://test/en/journal/photography/':'http://test/en/work/cobreath/';
  assert.equal(await h.ctx.PortfolioTransitions.navigate(url,photo?'photo':'cover'),false,failure);
@@ -84,6 +86,10 @@ for(const lang of ['zh','en'])for(const project of projectFrames){
  const first=html.match(/<figure class="portfolio-page"[^]*?<img [^>]+>/)[0];
  assert.match(first,/loading="eager"/);assert.match(first,/fetchpriority="high"/);
  assert.ok(!first.includes('loading="lazy"'));
- assert.ok(html.indexOf('/project-image-ready.js')<html.indexOf('/cover-transition.js'));
+ assert.match(html, /src="\/static\/core-[a-f0-9]+\.js" defer/);
+ const later=[...html.matchAll(/<figure class="portfolio-page"[^]*?<img [^>]+>/g)].slice(1);
+ later.forEach(match=>assert.match(match[0], /data-src="\/assets\//));
+ assert.ok(!html.includes('preload="metadata"'));
+ assert.ok(!/<source[^>]+(?<!data-)src=/.test(html));
 }
 console.log('PASS: all six projects in both languages: initial/cached entries, delayed decode, delayed paint, retained cover, failure retry, eager first images; plus next, history, gallery and reduced motion.');

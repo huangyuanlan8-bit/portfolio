@@ -1103,6 +1103,7 @@ const Folder = ({
 
     const frame = now => {
       state.raf = 0;
+      if(state.suspended||document.hidden)return;
       const s = settingsRef.current;
       const { g: geometry } = s;
       ensureItems(s.count);
@@ -1514,6 +1515,7 @@ const Folder = ({
     };
 
     const wake = () => {
+      if(state.suspended||document.hidden)return;
       if (!state.raf) state.raf = requestAnimationFrame(frame);
     };
 
@@ -1754,9 +1756,15 @@ const Folder = ({
         return true;
       }
     };
-    wake();
+    const pauseView=()=>{state.suspended=true;cancelAnimationFrame(state.raf);state.raf=0;state.last=0;};
+    const resumeView=()=>{state.suspended=false;wake();};
+    const updateView=()=>{const r=root.getBoundingClientRect();if(window.PortfolioRuntime?.isActive()===false||document.hidden||r.bottom<0||r.top>innerHeight)pauseView();else resumeView();};
+    const viewObserver=new IntersectionObserver(updateView);viewObserver.observe(root);
+    window.addEventListener('portfolio:suspend',pauseView);window.addEventListener('portfolio:resume',updateView);document.addEventListener('visibilitychange',updateView);
+    updateView();
 
     return () => {
+      viewObserver.disconnect();window.removeEventListener('portfolio:suspend',pauseView);window.removeEventListener('portfolio:resume',updateView);document.removeEventListener('visibilitychange',updateView);
       cancelAnimationFrame(state.raf);
       root.removeEventListener('pointermove', onMove);
       root.removeEventListener('pointerleave', onLeave);

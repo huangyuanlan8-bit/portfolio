@@ -37,7 +37,7 @@ export async function inspectOutput(root) {
   }
   for (const [source, text] of texts) {
     if (/(?:^|["'\s(])(?:[a-z]:[\\/]|file:\/\/)|https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])\b/im.test(text)) machinePaths.push({source});
-    for (const match of text.matchAll(/\/assets\/[a-z\d._%/+@-]+/gi)) reference(match[0], source, true);
+    for (const match of text.matchAll(/\/(?:assets|static)\/[a-z\d._%/+@-]+/gi)) reference(match[0], source, true);
     if (source.endsWith('.html')) {
       for (const match of text.matchAll(/<(a|link|img|script|source|video)\b[^>]*>/gi)) {
         for (const attr of match[0].matchAll(/\b(href|src|poster|srcset)="([^"]+)"/gi)) {
@@ -79,7 +79,7 @@ export async function verifyPages(root) {
   assert.ok(result.files.includes('404.html'), 'Missing custom 404; Pages would use SPA fallback');
   const rules = (await readFile(path.join(root, '_redirects'), 'utf8')).split(/\r?\n/)
     .filter(line => line && !line.startsWith('#')).map(line => {const [from,to,status] = line.trim().split(/\s+/);return {from,to,status:Number(status)};});
-  assert.equal(resolvePagesRoute('/', result.files, rules).location, '/zh/');
+  assert.equal(resolvePagesRoute('/', result.files, rules).location, '/en/');
   const routes = result.files.filter(file => file.endsWith('/index.html')).map(file => `/${file.slice(0,-10)}`);
   for (const route of routes) {
     assert.equal(resolvePagesRoute(route, result.files, rules).status, 200, `Direct route ${route}`);

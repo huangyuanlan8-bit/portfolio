@@ -2,7 +2,8 @@
 window.PortfolioInk=function(host,reduced,small){
  const canvas=host.querySelector('.ink-canvas'),ctx=canvas.getContext('2d',{alpha:true});if(!ctx)return;
  let nx=96,ny=55,stride=98,size=0,u,v,nextU,nextV,density,nextDensity,pressure,divergence,image,width=1,height=1,raf=0,last=0,peak=0,previous=null;
- const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),allowed=()=>!reduced.matches&&!small.matches&&matchMedia('(pointer:fine)').matches;
+ let suspended=false;
+ const clamp=(n,a,b)=>Math.max(a,Math.min(b,n)),allowed=()=>!suspended&&!document.hidden&&!reduced.matches&&!small.matches&&matchMedia('(pointer:fine)').matches;
  function resize(){const box=host.getBoundingClientRect();width=box.width;height=box.height;ny=Math.max(30,Math.min(80,Math.round(nx*height/width)));stride=nx+2;size=stride*(ny+2);[u,v,nextU,nextV,density,nextDensity,pressure,divergence]=Array.from({length:8},()=>new Float32Array(size));canvas.width=nx;canvas.height=ny;image=ctx.createImageData(nx,ny);peak=0;canvas.dataset.renderer='advected-ink-field';}
  function sample(source,x,y){x=clamp(x,.5,nx+.5);y=clamp(y,.5,ny+.5);const i=Math.floor(x),j=Math.floor(y),a=x-i,b=y-j,k=i+j*stride;return (1-a)*((1-b)*source[k]+b*source[k+stride])+a*((1-b)*source[k+1]+b*source[k+stride+1]);}
  function project(){pressure.fill(0);for(let y=1;y<=ny;y++)for(let x=1;x<=nx;x++){const k=x+y*stride;divergence[k]=-.5*(u[k+1]-u[k-1]+v[k+stride]-v[k-stride]);}for(let pass=0;pass<12;pass++)for(let y=1;y<=ny;y++)for(let x=1;x<=nx;x++){const k=x+y*stride;pressure[k]=(divergence[k]+pressure[k-1]+pressure[k+1]+pressure[k-stride]+pressure[k+stride])*.25;}for(let y=1;y<=ny;y++)for(let x=1;x<=nx;x++){const k=x+y*stride;u[k]-=.5*(pressure[k+1]-pressure[k-1]);v[k]-=.5*(pressure[k+stride]-pressure[k-stride]);}}
@@ -19,5 +20,6 @@ window.PortfolioInk=function(host,reduced,small){
  },{passive:true});
  host.addEventListener('pointerleave',()=>{previous=null;});
  function stop(){cancelAnimationFrame(raf);raf=0;last=0;peak=0;previous=null;u?.fill(0);v?.fill(0);density?.fill(0);ctx.clearRect(0,0,nx,ny);canvas.dataset.energy='0';}
+ addEventListener('portfolio:suspend',()=>{suspended=true;stop();});addEventListener('portfolio:resume',()=>{suspended=false;});
  addEventListener('resize',resize,{passive:true});small.addEventListener('change',stop);reduced.addEventListener('change',stop);document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});new IntersectionObserver(entries=>{if(!entries[0].isIntersecting)stop();}).observe(host);resize();
 };

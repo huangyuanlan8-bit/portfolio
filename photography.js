@@ -9,7 +9,7 @@
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  let saved=0;try{saved=Number(sessionStorage.getItem('yuanlan-photo-position'))||0;}catch{}
  const state={position:saved,velocity:0,energy:0,time:0,idle:reduced.matches?0:1,drag:null,satDirty:true,flex:0,flexV:0,flow:0,hovers:new Map(),pointer:null};
- let layout,gl,renderer,raf=0,last=0,active=-1,frames=[],frameNumber=0,ready=false,suspended=false,frameCost=0,frameInterval=16.7;
+ let layout,gl,renderer,raf=0,last=0,active=-1,frames=[],frameNumber=0,ready=false,suspended=false,frameCost=0,frameInterval=16.7,lastHoverX=null,lastHoverY=null,lastHoverPosition=null,lastHoverFrames=null;
  const textures=new Map(),cols=48,rows=24;
  function updateCaption(index){index=math.wrap(index,count);if(active===index)return;active=index;root.querySelector('[data-photo-count]').textContent=`${String(index+1).padStart(2,'0')} / ${String(count).padStart(2,'0')}`;root.querySelector('[data-photo-caption]').textContent=label(photos[index].title);root.dataset.currentPhoto=index+1;}
  function openPhoto(index){const photo=photos[math.wrap(index,count)];state.velocity=0;state.drag=null;state.pointer=null;root.classList.remove('is-dragging');large.src=photo.full;large.alt=label(photo.title);dialog.querySelector('#photo-lightbox-title').textContent=label(photo.title);dialog.querySelector('[data-photo-details]').textContent=[label(photo.location),photo.year].filter(Boolean).join(' / ');dialog.showModal();close.focus();}
@@ -51,7 +51,9 @@
   return photoOnly&&!nearest?.isPhoto?null:nearest;
  }
  function updateHover(dt){
-  const hit=state.pointer&&!state.drag?hitFilm(state.pointer):null;
+  const changed=state.pointer?.x!==lastHoverX||state.pointer?.y!==lastHoverY||state.position!==lastHoverPosition||frames!==lastHoverFrames;
+  const hit=state.pointer&&!state.drag?(changed?hitFilm(state.pointer):state.lastHoverHit):null;
+  state.lastHoverHit=hit;lastHoverX=state.pointer?.x;lastHoverY=state.pointer?.y;lastHoverPosition=state.position;lastHoverFrames=frames;
   if(hit&&!state.hovers.has(hit.tile))state.hovers.set(hit.tile,{amount:0,velocity:0,u:hit.u,v:hit.v});
   root.dataset.hoveredPhoto=hit?hit.index+1:'';
   root.dataset.hoverUv=hit?`${hit.u.toFixed(3)},${hit.v.toFixed(3)}`:'';
@@ -73,7 +75,7 @@
    links[index].dataset.saturation=saturation.toFixed(4);links[index].dataset.screenX=centre.x.toFixed(2);links[index].dataset.tile=tile;
    if(frameNumber%4===0){links[index].dataset.surface=JSON.stringify(frame.samples);links[index].dataset.normals=JSON.stringify(frame.normals);}
   }
-  renderer.render(frames);if(root.dataset.mediaReady!=='true'&&frames.length&&frames.every(f=>textures.get(f.index)?.loaded)){root.dataset.mediaReady='true';root.dispatchEvent(new Event('portfolio:media'));}const current=frames.reduce((a,b)=>Math.abs(a.centre.x-layout.width/2)<Math.abs(b.centre.x-layout.width/2)?a:b);updateCaption(current.index);state.satDirty=false;root.dataset.position=state.position.toFixed(5);frameCost+=(performance.now()-started-frameCost)*.1;if(frameNumber%30===0){root.dataset.renderMs=frameCost.toFixed(1);root.dataset.fps=Math.round(1000/frameInterval);}
+  renderer.render(frames);const current=frames.reduce((a,b)=>Math.abs(a.centre.x-layout.width/2)<Math.abs(b.centre.x-layout.width/2)?a:b);if(root.dataset.mediaReady!=='true'&&textures.get(current.index)?.loaded){root.dataset.mediaReady='true';root.dispatchEvent(new Event('portfolio:media'));}updateCaption(current.index);state.satDirty=false;root.dataset.position=state.position.toFixed(5);frameCost+=(performance.now()-started-frameCost)*.1;if(frameNumber%30===0){root.dataset.renderMs=frameCost.toFixed(1);root.dataset.fps=Math.round(1000/frameInterval);}
   if(frameNumber%120===0)for(const [index,record] of textures)if(record.last<frameNumber-120){gl.deleteTexture(record.texture);textures.delete(index);}
  }
  function tick(time){

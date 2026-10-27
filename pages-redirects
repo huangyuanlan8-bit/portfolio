@@ -1,5 +1,5 @@
 # Static multi-page routes already have their own directory/index.html.
 # Deliberately no /* /index.html 200 SPA fallback.
-/ /zh/ 302
+/ /en/ 302
 /zh /zh/ 301
 /en /en/ 301

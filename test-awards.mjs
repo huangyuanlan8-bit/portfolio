@@ -67,7 +67,8 @@ for(const lang of ['zh','en']){
  for(const page of [main,standalone]){
   assert.equal(page.split('id="awards"').length-1,1);
   assert.ok(page.indexOf('id="awards"')>page.indexOf('YUANLAN HUANG / 黄塬岚'));
-  assert.ok(page.includes('/awards.css')&&page.includes('/awards.js'));
+  assert.match(page, /href="\/static\/site-[a-f0-9]+\.css"/);
+  assert.match(page, /src="\/static\/core-[a-f0-9]+\.js"/);
  }
  assert.ok(main.indexOf('id="awards"')<main.indexOf('id="projects"'));
 }

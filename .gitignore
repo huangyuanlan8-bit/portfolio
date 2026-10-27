@@ -9,6 +9,7 @@ node_modules/
 
 # Local preparation, caches, reports and archives.
 .pages-cache/
+.build-assets/
 .work/
 research/
 .cache/

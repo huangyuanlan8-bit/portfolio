@@ -3,6 +3,7 @@ import {aboutSection,projectSection,experienceSection} from './stages.mjs';
 import { profile, projects } from './content.mjs';
 import { readFile } from 'node:fs/promises';
 const layout=JSON.parse(await readFile(new URL('./hero-layout.json',import.meta.url),'utf8'));
+const heroVariants=JSON.parse(await readFile(new URL('./hero-variants.json',import.meta.url),'utf8'));
 const e=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const t=(v,l)=>e(Array.isArray(v)?v[l==='zh'?0:1]:v);
 const L=(a,b,l)=>t([a,b],l);
@@ -31,7 +32,10 @@ function collage(l){
  const pct=(v,total)=>(v/total*100).toFixed(4)+'%';
  const dx=layer.x+layer.width/2<layout.width/2?-15.56:15.56,dy=layer.y+layer.height/2<layout.height/2?-15.56:15.56;
  const style=`--x:${pct(layer.x,layout.width)};--y:${pct(layer.y,layout.height)};--w:${pct(layer.width,layout.width)};--h:${pct(layer.height,layout.height)};--layer-z:${layer.z};--dx:${dx}px;--dy:${dy}px;--hit:${layer.hit||'inset(0)'}`;
- const img=`<img src="/assets/hero/${layer.id}.webp" width="${layer.width}" height="${layer.height}" alt="" draggable="false" decoding="async" ${layer.interactive?'fetchpriority="high"':''}>`;
+ const candidates=heroVariants[layer.id],fraction=layer.width/layout.width*(layer.interactive?1.5:1);
+ const sizes=`(max-width:760px) ${(fraction*116).toFixed(3)}vw, min(${(fraction*82).toFixed(3)}vw, ${(fraction*129.15).toFixed(3)}svh, ${(fraction*1600).toFixed(1)}px)`;
+ const responsive=candidates?`srcset="${candidates.map(v=>`${v.src} ${v.width}w`).join(',')}" sizes="${sizes}"`:'';
+ const img=`<img src="/assets/hero/${layer.id}.webp" ${responsive} width="${layer.width}" height="${layer.height}" alt="" draggable="false" decoding="async" ${['photo-01','decor-star'].includes(layer.id)?'fetchpriority="high"':'fetchpriority="auto"'}>`;
  return layer.interactive?`<div class="collage-layer photo-slot" data-photo="${layer.id}" style="${style}"><div class="photo-visual" aria-hidden="true">${img}</div><div class="photo-hit" tabindex="0" role="img" aria-label="${t(layer.alt,l)}"></div></div>`:`<div class="collage-layer collage-decor" aria-hidden="true" style="${style}">${img}</div>`;
  }).join('')}</div></div>`;
 }

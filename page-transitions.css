@@ -11,6 +11,9 @@
 .motion-status{display:flex;align-items:center;gap:18px}
 .motion-status button{flex:none;border:1px solid #818783;border-radius:5px;background:transparent;color:inherit;padding:5px 10px;font:inherit;cursor:pointer}
 .motion-status button:focus-visible{outline:2px solid white;outline-offset:3px}
+.motion-status[data-loading="true"]::before{content:'';width:13px;height:13px;flex:none;border:1.5px solid #ffffff55;border-top-color:white;border-radius:50%;animation:motion-loading-spin .8s linear infinite}
+.motion-pending::after{content:'Opening…';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:9px 15px;border-radius:20px;background:#161818de;color:#fff;font:12px/1.4 var(--mono);white-space:nowrap;z-index:5;pointer-events:none}
+@keyframes motion-loading-spin{to{rotate:360deg}}
 .motion-particle{position:fixed;z-index:10011;width:3px;height:3px;border-radius:50%;background:#e6e8e5;pointer-events:none}
 .portfolio-heading h1:focus,.journal-chapter:focus{outline:none}
-@media(prefers-reduced-motion:reduce){.motion-layer,.motion-particle{display:none}}
+@media(prefers-reduced-motion:reduce){.motion-layer,.motion-particle{display:none}.motion-status[data-loading="true"]::before{animation:none}}

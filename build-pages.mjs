@@ -38,6 +38,7 @@ for (const media of manifest.optimizedVideos) {
 }
 console.log('Building React/GSAP production bundle…');
 await run('bundle-journal.mjs');
+await run('bundle-site.mjs');
 await removeGenerated(staging);
 console.log('Building bilingual static HTML from versioned public/assets…');
 await run('build.mjs', {SITE_OUTPUT_DIR:'cloudflare-pages.staging'});

@@ -8,7 +8,7 @@ const files=await walk(root),html=files.filter(f=>f.endsWith('.html'));let links
 for(const f of html){
  const text=await readFile(f,'utf8');
  for(const match of text.matchAll(/(?:href|src|poster)="([^"#]+)(#[^"]*)?"/g)){
-  const raw=match[1];if(/^(mailto:|https?:)/.test(raw))continue;
+  const raw=match[1];if(/^(mailto:|https?:|data:|blob:|tel:)/.test(raw))continue;
   const url=decodeURIComponent(raw);let target=path.join(root,url);
   if(url.endsWith('/'))target=path.join(target,'index.html');
   assert.ok(files.includes(target),`Missing reference ${raw} in ${f}`);links++;
