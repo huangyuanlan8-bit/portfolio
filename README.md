@@ -18,6 +18,8 @@ npm run dev
 
 The local preview is printed by `server.mjs`. Production output is **`cloudflare-pages/`**. The build bundles React / GSAP, generates all bilingual HTML pages and copies versioned `public/assets`, then verifies links, media, CVs, direct routes and Cloudflare's per-file limit. It works without an existing `dist`, generated bundle, ffmpeg or developer cache.
 
+Performance: see [the production audit](PERFORMANCE.md). Shared code and styles use content-hashed `/static/` URLs; heavy features and below-the-fold media load on demand. The root defaults to English.
+
 ## Cloudflare Pages: GitHub automatic deployment
 
 Connect `huangyuanlan8-bit/portfolio` using **Pages → Connect to Git**, then use:

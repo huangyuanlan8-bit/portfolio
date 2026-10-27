@@ -27,6 +27,7 @@ function harness(reduced=false,start='http://test/en/#projects',readyBeforeLoad=
   doc.querySelectorAll=selector=>selector==='iframe'?frames:selector.includes('h1')?[heading]:[main];return doc;
  }
  const doc=makeDoc(start,'ok'),ctx={document:doc,URL,Event,Promise,Map,WeakMap,Error,Boolean,Date,Math,Number,JSON,console,performance:{mark(){}},innerWidth:1280,devicePixelRatio:1,matchMedia:()=>({matches:reduced}),setTimeout:(fn,ms)=>{const t=setTimeout(fn,ms);t.unref();return t;},clearTimeout,setInterval,clearInterval,requestAnimationFrame:fn=>setImmediate(()=>fn(clock+=16.7)),addEventListener:(k,fn)=>{handlers[k]=fn;},fetch:()=>Promise.reject(Error('not needed')),sessionStorage:{getItem:()=>null}};
+ ctx.Image=class extends Element{constructor(){super('img');this.complete=false;this.naturalWidth=0;}};
  ctx.window=ctx;ctx.parent=ctx;ctx.location=new URL(start);ctx.scrollY=1234;ctx.PortfolioPage=doc.win.PortfolioPage;ctx.dispatchEvent=()=>{};ctx.history={state:null,replaceState(s,_,url){this.state=s;ctx.location=new URL(url);historyEntries[0]={s,url};},pushState(s,_,url){this.state=s;ctx.location=new URL(url);historyEntries.push({s,url});}};
  ctx.PortfolioCoverTransition=args=>{logs.push({type:'cover',next:args.next,surface:args.targetSurface});return {canvas:new Element('div'),draw:t=>logs.push({type:'draw',t}),remove:()=>logs.push({type:'removed-cover'})};};
  doc.createElement=tag=>new Element(tag);vm.createContext(ctx);vm.runInContext(mediaCode,ctx);
@@ -37,6 +38,10 @@ function harness(reduced=false,start='http://test/en/#projects',readyBeforeLoad=
 }
 const early=harness(false,'http://test/en/#projects',true);
 assert.equal(await early.ctx.PortfolioTransitions.navigate('http://test/en/work/care-meal/','cover'),true,'A mounted first screen can enter while window.load and noncritical fonts remain pending');
+const central=early.ctx.PortfolioTransitions.preloadPhotograph('/assets/central.webp');
+assert.equal(central,early.ctx.PortfolioTransitions.preloadPhotograph('/assets/central.webp'),'Intent, gallery document and texture preparation share one image download');
+central.complete=true;
+assert.notEqual(central,early.ctx.PortfolioTransitions.preloadPhotograph('/assets/central.webp'),'A failed photograph is replaced on retry');
 for(const failure of ['404','image-error','photo-error']){
  const h=harness();h.mode=failure;const photo=failure==='photo-error',url=photo?'http://test/en/journal/photography/':'http://test/en/work/cobreath/';
  assert.equal(await h.ctx.PortfolioTransitions.navigate(url,photo?'photo':'cover'),false,failure);

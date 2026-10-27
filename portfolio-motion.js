@@ -14,6 +14,8 @@
  const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms)),raf=()=>new Promise(resolve=>requestAnimationFrame(resolve));
  const timeout=(promise,ms=15000)=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Timed out while preparing this page.')),ms);promise.then(v=>{clearTimeout(timer);resolve(v);},e=>{clearTimeout(timer);reject(e);});});
  const media=window.PortfolioProjectImage;
+ const photographCache=new Map();
+ function preloadPhotograph(url){const key=new URL(url,location.href).href;let image=photographCache.get(key);if(!image||image.complete&&!image.naturalWidth){image=new Image();image.decoding='async';image.fetchPriority='high';image.src=key;photographCache.set(key,image);}return image;}
  const decode=image=>timeout(media.decode(image));
  function capture(view){view.win.PortfolioJournal?.finish();const snapshot=view.win.PortfolioPage?.capture()||{y:view.win.scrollY,width:view.win.innerWidth};view.snapshot=snapshot;return snapshot;}
  function cancelAnimations(view){view.anims.forEach(a=>a.cancel());view.anims=[];}
@@ -134,7 +136,7 @@
    if(!control.cancelled){warm.delete(parsed.pathname);announce(document.documentElement.lang.startsWith('zh')?'首图暂时无法加载，已保留当前封面。请重试。':'The first image could not be prepared. Your current page is still available.',()=>navigate(url,kind,link,sourceWindow,popEntry));}return false;
   }finally{link?.classList?.remove('motion-pending');performance.mark?.('portfolio:navigation-end');busy=false;token=null;document.documentElement.classList.remove('motion-animating');delete document.documentElement.dataset.transitionBusy;delete document.documentElement.dataset.transitionProgress;if(queuedPop){const entry=queuedPop;queuedPop=null;requestAnimationFrame(()=>navigate(entry.url,activeView.doc.querySelector('[data-photo-diary]')?'photo-back':'fade',null,activeView.win,entry));}}
  }
- window.PortfolioTransitions={isShell:true,navigate,documentReady(doc,win){readyFrames.get(win.frameElement)?.();},setParticles(value){particles=Boolean(value);},get particles(){return particles;},get busy(){return busy;}};
+ window.PortfolioTransitions={isShell:true,navigate,preloadPhotograph,documentReady(doc,win){readyFrames.get(win.frameElement)?.();},setParticles(value){particles=Boolean(value);},get particles(){return particles;},get busy(){return busy;}};
  install(document,window,navigate);
  document.addEventListener('wheel',event=>{if(document.documentElement.classList.contains('motion-animating'))event.preventDefault();},{passive:false,capture:true});
  addEventListener('popstate',event=>{const entry=entries.get(event.state?.portfolioMotion);if(!entry){location.reload();return;}if(busy){queuedPop=entry;if(token)token.cancelled=true;return;}navigate(entry.url,entry.url.includes('/journal/photography/')?'photo':activeView.doc.querySelector('[data-photo-diary]')?'photo-back':entry.url.includes('#projects')?'project-back':'fade',null,activeView.win,entry);});
@@ -146,14 +148,14 @@
   if(!photography&&!link.closest('.orbit-card,.portfolio-next,.next-project'))return;
   if(warm.has(url.pathname))return warm.get(url.pathname);
   let centralPhoto=null;
-  if(photography&&link.dataset.photoPreviews){try{const photos=JSON.parse(link.dataset.photoPreviews);let position=0;try{position=Number(sessionStorage.getItem('yuanlan-photo-position'))||0;}catch{}centralPhoto=new Image();centralPhoto.decoding='async';centralPhoto.fetchPriority='high';centralPhoto.src=photos[((Math.round(position)%photos.length)+photos.length)%photos.length];}catch{}}
+  if(photography&&link.dataset.photoPreviews){try{const photos=JSON.parse(link.dataset.photoPreviews);let position=0;try{position=Number(sessionStorage.getItem('yuanlan-photo-position'))||0;}catch{}centralPhoto=preloadPhotograph(photos[((Math.round(position)%photos.length)+photos.length)%photos.length]);}catch{}}
   const promise=getView(url.href).then(async view=>{
    const image=view.doc.querySelector('.portfolio-page img,.case-cover img');if(image)await timeout(media.decode(image),30000);
    if(photography){
     // Prepare the script and central photograph without running a hidden GPU scene.
     if(!view.doc.querySelector('[data-inline-feature="photography"]')){const script=view.doc.createElement('link');script.rel='preload';script.as='script';script.href=view.win.PortfolioAssetMap.photography;view.doc.head.append(script);}
     const photos=JSON.parse(view.doc.querySelector('#photo-diary-data').textContent);let position=0;try{position=Number(sessionStorage.getItem('yuanlan-photo-position'))||0;}catch{}
-    const index=((Math.round(position)%photos.length)+photos.length)%photos.length,photo=centralPhoto||new Image();photo.decoding='async';photo.fetchPriority='high';photo.src=photos[index].preview;await timeout(media.decode(photo),30000);
+    const index=((Math.round(position)%photos.length)+photos.length)%photos.length,photo=centralPhoto||preloadPhotograph(photos[index].preview);await timeout(media.decode(photo),30000);
    }
    trim();
   }).catch(()=>{warm.delete(url.pathname);});

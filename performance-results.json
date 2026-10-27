@@ -1,0 +1,333 @@
+{
+  "date": "2026-10-27",
+  "site": "https://yuanlan-huang.pages.dev/",
+  "baselineRevision": "dc96e10",
+  "measuredOptimizedRevision": "4a8d4ee",
+  "conditions": {
+    "viewport": "1440x900",
+    "dpr": 1,
+    "cacheDisabled": true,
+    "proxy": "local configured proxy",
+    "slow": false
+  },
+  "browser": "155.0.8059.85",
+  "measurementWindow": "Homepage snapshot 8 seconds after DOMContentLoaded; FCP/LCP from PerformanceObserver. Fresh browser contexts; CDP cache disabled for cold traces.",
+  "before": [
+    {
+      "sample": "before",
+      "fcpMs": 4080,
+      "lcpMs": 6012,
+      "requestCount": 66,
+      "transferBytes": 4212633,
+      "ttfbMs": 950.521
+    },
+    {
+      "sample": "before-full",
+      "fcpMs": 3456,
+      "lcpMs": 3972,
+      "requestCount": 66,
+      "transferBytes": 4212817,
+      "ttfbMs": 603.574
+    },
+    {
+      "sample": "before-final",
+      "fcpMs": 7304,
+      "lcpMs": 8720,
+      "requestCount": 65,
+      "transferBytes": 3628049,
+      "ttfbMs": 1572.427
+    },
+    {
+      "sample": "before-home-final",
+      "fcpMs": 4804,
+      "lcpMs": 4804,
+      "requestCount": 66,
+      "transferBytes": 4212711,
+      "ttfbMs": 643.555
+    }
+  ],
+  "after": [
+    {
+      "sample": "after-production",
+      "fcpMs": 1548,
+      "lcpMs": 2132,
+      "requestCount": 25,
+      "transferBytes": 862526,
+      "ttfbMs": 1285.838
+    },
+    {
+      "sample": "after-home-2",
+      "fcpMs": 1136,
+      "lcpMs": 1484,
+      "requestCount": 25,
+      "transferBytes": 862497,
+      "ttfbMs": 712.857
+    },
+    {
+      "sample": "after-home-3",
+      "fcpMs": 888,
+      "lcpMs": 1424,
+      "requestCount": 25,
+      "transferBytes": 862520,
+      "ttfbMs": 422.155
+    }
+  ],
+  "productionFlow": [
+    {
+      "phase": "home-8s",
+      "url": "https://yuanlan-huang.pages.dev/en/",
+      "requests": 25,
+      "transferBytes": 862526
+    },
+    {
+      "phase": "projects",
+      "url": "https://yuanlan-huang.pages.dev/en/#projects",
+      "requests": 36,
+      "transferBytes": 1676586
+    },
+    {
+      "phase": "cover-feedback",
+      "url": "https://yuanlan-huang.pages.dev/en/#projects",
+      "requests": 37,
+      "transferBytes": 1676586
+    },
+    {
+      "phase": "cover-complete-1681ms",
+      "url": "https://yuanlan-huang.pages.dev/en/work/care-meal/",
+      "requests": 50,
+      "transferBytes": 2152758
+    },
+    {
+      "phase": "detail-idle-start",
+      "url": "https://yuanlan-huang.pages.dev/en/work/care-meal/",
+      "requests": 50,
+      "transferBytes": 2152758
+    },
+    {
+      "phase": "detail-idle-end",
+      "url": "https://yuanlan-huang.pages.dev/en/work/care-meal/",
+      "requests": 50,
+      "transferBytes": 2153253
+    },
+    {
+      "phase": "next-complete-1409ms",
+      "url": "https://yuanlan-huang.pages.dev/en/work/cobreath/",
+      "requests": 60,
+      "transferBytes": 2520047
+    },
+    {
+      "phase": "project-back",
+      "url": "https://yuanlan-huang.pages.dev/en/#projects",
+      "requests": 61,
+      "transferBytes": 2520971
+    },
+    {
+      "phase": "cover-cached-1077ms",
+      "url": "https://yuanlan-huang.pages.dev/en/work/care-meal/",
+      "requests": 62,
+      "transferBytes": 2520971
+    },
+    {
+      "phase": "journal",
+      "url": "https://yuanlan-huang.pages.dev/en/#journal",
+      "requests": 73,
+      "transferBytes": 2902095
+    },
+    {
+      "phase": "photography-complete-1278ms",
+      "url": "https://yuanlan-huang.pages.dev/en/journal/photography/",
+      "requests": 85,
+      "transferBytes": 4540680
+    },
+    {
+      "phase": "journal-back",
+      "url": "https://yuanlan-huang.pages.dev/en/#journal",
+      "requests": 86,
+      "transferBytes": 4541293
+    },
+    {
+      "phase": "browser-back-gallery",
+      "url": "https://yuanlan-huang.pages.dev/en/journal/photography/",
+      "requests": 87,
+      "transferBytes": 4577838
+    },
+    {
+      "phase": "browser-back-journal",
+      "url": "https://yuanlan-huang.pages.dev/en/#journal",
+      "requests": 88,
+      "transferBytes": 4578301
+    }
+  ],
+  "allProjectsLive": [
+    {
+      "step": "home",
+      "requests": 23
+    },
+    {
+      "step": "first-care-meal",
+      "ms": 1626,
+      "ready": "true",
+      "loaded": 2,
+      "total": 6,
+      "videoSources": 0
+    },
+    {
+      "step": "cached-care-meal",
+      "ms": 1087
+    },
+    {
+      "step": "first-cobreath",
+      "ms": 1492,
+      "ready": "true",
+      "loaded": 2,
+      "total": 6,
+      "videoSources": 0
+    },
+    {
+      "step": "cached-cobreath",
+      "ms": 1083
+    },
+    {
+      "step": "first-dotheal",
+      "ms": 1790,
+      "ready": "true",
+      "loaded": 2,
+      "total": 6,
+      "videoSources": 0
+    },
+    {
+      "step": "cached-dotheal",
+      "ms": 1078
+    },
+    {
+      "step": "first-dragon",
+      "ms": 1752,
+      "ready": "true",
+      "loaded": 2,
+      "total": 4,
+      "videoSources": 0
+    },
+    {
+      "step": "cached-dragon",
+      "ms": 1073
+    },
+    {
+      "step": "first-scent-chongqing",
+      "ms": 1685,
+      "ready": "true",
+      "loaded": 1,
+      "total": 6,
+      "videoSources": 0
+    },
+    {
+      "step": "cached-scent-chongqing",
+      "ms": 1085
+    },
+    {
+      "step": "first-other-work",
+      "ms": 1725,
+      "ready": "true",
+      "loaded": 1,
+      "total": 7,
+      "videoSources": 0
+    },
+    {
+      "step": "cached-other-work",
+      "ms": 1095
+    },
+    {
+      "step": "folder/gallery/wheel/viewer/button+browser-back",
+      "photoPreviews": 5
+    },
+    {
+      "step": "mobile",
+      "overflow": false
+    }
+  ],
+  "slow": {
+    "conditions": {
+      "viewport": "1440x900",
+      "dpr": 1,
+      "cacheDisabled": true,
+      "proxy": "local configured proxy",
+      "slow": true,
+      "throttle": "150ms latency / 1.6Mbps down / 750kbps up"
+    },
+    "phases": [
+      "home-8s",
+      "projects",
+      "cover-feedback",
+      "cover-complete-3069ms",
+      "detail-idle-start",
+      "detail-idle-end",
+      "next-complete-1558ms",
+      "project-back",
+      "cover-cached-1082ms",
+      "journal",
+      "photography-complete-7801ms",
+      "journal-back",
+      "browser-back-gallery",
+      "browser-back-journal"
+    ],
+    "errors": []
+  },
+  "mediaFailureSimulation": {
+    "method": "Simulated image delays/failure in a real Chromium; not public-network timing",
+    "results": [
+      {
+        "slug": "care-meal",
+        "delayedFirstMs": 1600,
+        "lowerBoardsHeld": true,
+        "loadingFeedback": true,
+        "entered": true
+      },
+      {
+        "slug": "cobreath",
+        "delayedFirstMs": 1600,
+        "lowerBoardsHeld": true,
+        "loadingFeedback": true,
+        "entered": true
+      },
+      {
+        "slug": "dotheal",
+        "delayedFirstMs": 1600,
+        "lowerBoardsHeld": true,
+        "loadingFeedback": true,
+        "entered": true
+      },
+      {
+        "slug": "dragon",
+        "delayedFirstMs": 1600,
+        "lowerBoardsHeld": true,
+        "loadingFeedback": true,
+        "entered": true
+      },
+      {
+        "slug": "scent-chongqing",
+        "delayedFirstMs": 1600,
+        "lowerBoardsHeld": true,
+        "loadingFeedback": true,
+        "entered": true
+      },
+      {
+        "slug": "other-work",
+        "delayedFirstMs": 1600,
+        "lowerBoardsHeld": true,
+        "loadingFeedback": true,
+        "entered": true
+      },
+      {
+        "step": "failed-first-image/retry",
+        "passed": true
+      }
+    ]
+  },
+  "idle": {
+    "hiddenHomeCallbacks": 0,
+    "visibleFilmCallbacks": 133
+  },
+  "notes": [
+    "Network latency varies; these are sampled measurements, not a global speed guarantee.",
+    "A final follow-up reuses the same central image object across intent, iframe document and GPU texture upload, including cache-disabled browsers."
+  ]
+}

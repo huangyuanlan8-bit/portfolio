@@ -29,7 +29,12 @@
   let record=textures.get(index);if(record){record.last=frameNumber;return record;}
   const surface=document.createElement('canvas');surface.width=compact.matches?768:1024;surface.height=surface.width*800/1024;
   const rect=paintTexture(surface,index,null),texture=renderer.texture(surface);record={texture,rect,last:frameNumber,loaded:false};textures.set(index,record);
-  const image=new Image();image.onload=()=>{if(!textures.has(index))return;record.rect=paintTexture(surface,index,image);renderer.updateTexture(texture,surface);record.loaded=true;state.satDirty=true;};image.onerror=()=>{if(index===math.wrap(Math.round(state.position),count)){root.dataset.mediaError='true';root.dispatchEvent(new Event('portfolio:media'));}};image.decoding='async';image.fetchPriority=index===math.wrap(Math.round(state.position),count)?'high':'low';image.src=photos[index].preview;return record;
+  const preloaded=window.PortfolioPhotoPreload?.url===photos[index].preview?window.PortfolioPhotoPreload.image:null;
+  const image=preloaded||new Image();
+  const loaded=()=>{if(!textures.has(index))return;record.rect=paintTexture(surface,index,image);renderer.updateTexture(texture,surface);record.loaded=true;state.satDirty=true;};
+  const failed=()=>{if(index===math.wrap(Math.round(state.position),count)){root.dataset.mediaError='true';root.dispatchEvent(new Event('portfolio:media'));}};
+  if(preloaded&&image.complete)queueMicrotask(image.naturalWidth?loaded:failed);else{image.addEventListener('load',loaded,{once:true});image.addEventListener('error',failed,{once:true});}
+  if(!preloaded){image.decoding='async';image.fetchPriority=index===math.wrap(Math.round(state.position),count)?'high':'low';image.src=photos[index].preview;}return record;
  }
  function resize(){layout=math.layout(root.clientWidth,root.clientHeight,compact.matches);state.satDirty=true;renderer?.resize(layout);}
  function hitFilm(point,photoOnly=false){
