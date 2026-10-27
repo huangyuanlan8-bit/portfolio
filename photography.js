@@ -51,7 +51,9 @@
   return photoOnly&&!nearest?.isPhoto?null:nearest;
  }
  function updateHover(dt){
-  const changed=state.pointer?.x!==lastHoverX||state.pointer?.y!==lastHoverY||state.position!==lastHoverPosition||frames!==lastHoverFrames;
+  // Physics substeps share the same rendered mesh. Raycast it once per frame,
+  // rather than repeating identical triangle intersections for each substep.
+  const changed=state.pointer?.x!==lastHoverX||state.pointer?.y!==lastHoverY||frames!==lastHoverFrames;
   const hit=state.pointer&&!state.drag?(changed?hitFilm(state.pointer):state.lastHoverHit):null;
   state.lastHoverHit=hit;lastHoverX=state.pointer?.x;lastHoverY=state.pointer?.y;lastHoverPosition=state.position;lastHoverFrames=frames;
   if(hit&&!state.hovers.has(hit.tile))state.hovers.set(hit.tile,{amount:0,velocity:0,u:hit.u,v:hit.v});

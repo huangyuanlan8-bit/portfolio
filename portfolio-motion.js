@@ -149,7 +149,7 @@
    const image=view.doc.querySelector('.portfolio-page img,.case-cover img');if(image)await timeout(media.decode(image),30000);
    if(photography){
     // Prepare the script and central photograph without running a hidden GPU scene.
-    const script=view.doc.createElement('link');script.rel='preload';script.as='script';script.href=view.win.PortfolioAssetMap.photography;view.doc.head.append(script);
+    if(!view.doc.querySelector('[data-inline-feature="photography"]')){const script=view.doc.createElement('link');script.rel='preload';script.as='script';script.href=view.win.PortfolioAssetMap.photography;view.doc.head.append(script);}
     const photos=JSON.parse(view.doc.querySelector('#photo-diary-data').textContent);let position=0;try{position=Number(sessionStorage.getItem('yuanlan-photo-position'))||0;}catch{}
     const index=((Math.round(position)%photos.length)+photos.length)%photos.length,photo=new Image();photo.decoding='async';photo.fetchPriority='high';photo.src=photos[index].preview;await timeout(media.decode(photo),30000);
    }
@@ -161,6 +161,10 @@
   const entry=target=>target.closest?.('a[href]')||(target.closest?.('[data-folder-host]')?doc.querySelector('[data-photography-entry]'):null);
   doc.addEventListener('pointerover',event=>{const link=entry(event.target);if(link)warmLink(link,win);},{passive:true});
   doc.addEventListener('focusin',event=>{const link=entry(event.target);if(link)warmLink(link,win);});
+  const photography=doc.querySelector('[data-photography-entry]');
+  if(photography&&typeof win.IntersectionObserver==='function'){
+   const observer=new win.IntersectionObserver(items=>{if(items.some(item=>item.isIntersecting)&&win.PortfolioRuntime?.isActive()!==false){warmLink(photography,win);observer.disconnect();}},{rootMargin:'120px'});observer.observe(photography);
+  }
  };
  warmDocument(document,window);window.PortfolioTransitions.warmDocument=warmDocument;
 })();

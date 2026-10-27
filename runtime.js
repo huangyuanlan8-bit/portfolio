@@ -19,11 +19,13 @@
  for(const element of document.querySelectorAll('img[data-src],video[data-poster]')){if(element.closest('.photo-fallback'))continue;media.add(element);mediaObserver?.observe(element);}
  function loadFeature(name){
   if(features.has(name))return features.get(name);
+  const embedded=document.querySelector(`script[data-inline-feature="${name}"]`);
+  if(embedded){const script=document.createElement('script');script.textContent=embedded.textContent;document.head.append(script);embedded.remove();const ready=Promise.resolve();features.set(name,ready);return ready;}
   const url=window.PortfolioAssetMap?.[name];if(!url)return Promise.reject(new Error(`Missing feature ${name}`));
   const promise=new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=url;script.async=true;script.fetchPriority=name==='photography'?'high':'low';script.onload=()=>resolve();script.onerror=()=>{features.delete(name);script.remove();reject(new Error(`Unable to load ${name}`));};document.head.append(script);});
   features.set(name,promise);return promise;
  }
- function near(element,margin){const box=element.getBoundingClientRect();return box.bottom>=-margin&&box.top<=innerHeight+margin;}
+ function near(element,margin){const box=element.getBoundingClientRect();return box.bottom>-margin&&box.top<innerHeight+margin;}
  function check(){
   if(!isActive())return;
   for(const element of media){const box=element.getBoundingClientRect();if(element.getClientRects().length&&box.right>=-250&&box.left<=innerWidth+250&&near(element,250))activateMedia(element);}
@@ -38,7 +40,7 @@
  window.PortfolioRuntime={loadFeature,activateImage,isActive,check};
  observe('experience',document.querySelector('#experience'));
  observe('journal',document.querySelector('[data-journal-motion]'),700);
- observe('journal',document.querySelector('[data-contact-shuffle]'),550);
+ observe('journal',document.querySelector('[data-contact-shuffle]'),0);
  if(document.querySelector('[data-photo-diary]'))records.push({name:'photography',element:document.querySelector('[data-photo-diary]'),margin:0,started:false});
  function videoSource(video){
   if(video.dataset.sourceReady)return false;const sources=[...video.querySelectorAll('source[data-src]')];
