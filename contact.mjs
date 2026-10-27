@@ -1,0 +1,5 @@
+const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export function contactFooter(lang,email){
+ const language=lang==='en'?'en':'zh',address=esc(email);
+ return `<footer id="contact" class="site-footer contact-footer" aria-labelledby="contact-title"><div class="contact-footer-top"><span class="contact-footer-logo">YUANLAN HUANG</span><div class="contact-footer-info"><p class="contact-footer-kicker">CONTACT</p><dl class="contact-footer-details"><dt>EMAIL</dt><dd><a class="contact-email" href="mailto:${address}">${address}</a></dd><dt>RESUME</dt><dd><a class="contact-resume" href="/assets/yuanlan-huang-cv-${language}.pdf" download aria-label="${language==='zh'?'下载中文简历':'Download English CV'}">Download CV ↓</a></dd></dl><p class="contact-copyright">© 2026 YUANLAN HUANG</p></div><a class="back-top" href="#top" aria-label="${language==='zh'?'平滑返回顶部':'Back to top'}">Back to top ↑</a></div><h2 id="contact-title" class="contact-display" data-contact-shuffle aria-label="/ CONTACT">/ CONTACT</h2></footer>`;
+}

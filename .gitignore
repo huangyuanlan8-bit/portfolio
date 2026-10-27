@@ -1,0 +1,52 @@
+# Dependencies and generated output. public/assets is versioned source input.
+node_modules/
+/dist/
+/cloudflare-pages/
+/cloudflare-pages.staging/
+/journal-components.js
+/journal-components.css
+/cloudflare-pages-report.json
+
+# Local preparation, caches, reports and archives.
+.pages-cache/
+.work/
+research/
+.cache/
+.npm/
+.pnpm-store/
+.wrangler/
+coverage/
+*.zip
+*.log
+*.tmp
+*.encoding.mp4
+
+# Credentials and local configuration.
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+.npmrc
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+service-account*.json
+*token*.txt
+
+# Editor / OS files.
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+
+# Legacy workstation-only material preparation; not build dependencies.
+/prepare_*.py
+/hero_geometry.py
+/package_site.py
+/CONTENT_TO_ADD.md

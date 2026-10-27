@@ -1,0 +1,33 @@
+/* No section paints a separate slab: one fixed backdrop follows scroll position. */
+body.gallery-flow{--gallery-bg:rgb(255,255,255);--gallery-bg-rgb:255 255 255;--gallery-fg:#151716;--gallery-fg-rgb:21 23 22;--gallery-muted:#707570;--gallery-dark:0;--gallery-reveal:0;--gallery-lift:20px;--ink:var(--gallery-fg);--paper:var(--gallery-bg);--muted:var(--gallery-muted);--line:rgb(var(--gallery-fg-rgb) / .13);background:#fff;background-image:none;color:var(--gallery-fg)}
+.gallery-atmosphere{position:fixed;inset:0;z-index:0;pointer-events:none;background:var(--gallery-bg);contain:strict;transition:none}
+.gallery-atmosphere:before,.gallery-atmosphere:after{content:'';position:absolute;inset:0;pointer-events:none;transition:none}
+.gallery-atmosphere:before{background-image:linear-gradient(90deg,transparent calc(25% - .5px),#eef0ee 25%,transparent calc(25% + .5px),transparent calc(50% - .5px),#eef0ee 50%,transparent calc(50% + .5px),transparent calc(75% - .5px),#eef0ee 75%,transparent calc(75% + .5px));opacity:calc(1 - var(--gallery-dark))}
+.gallery-atmosphere:after{background:radial-gradient(rgba(185,195,185,.16) .6px,transparent .85px) 0 0/6px 6px;opacity:var(--gallery-dark)}
+body.gallery-flow>main,body.gallery-flow>.site-footer{position:relative;z-index:1}
+body.gallery-flow #about,body.gallery-flow #projects,body.gallery-flow #projects .projects-sticky,body.gallery-flow #experience{background:transparent!important;background-image:none!important}
+body.gallery-flow #projects{--ink:var(--gallery-fg);--muted:var(--gallery-muted);--line:rgb(var(--gallery-fg-rgb) / .13);color:var(--gallery-fg);border-top:0;border-bottom:0}
+body.gallery-flow #about .about-picture>span,body.gallery-flow #about .chapter-kicker,body.gallery-flow #about .about-directions{color:var(--gallery-muted);border-color:var(--line)}
+body.gallery-flow #about .about-picture img{filter:none;object-fit:contain}
+body.gallery-flow #about .chapter-kicker i{background:var(--gallery-fg)}
+body.gallery-flow #projects .project-section-top .chapter-kicker,body.gallery-flow #projects .orbit-current{color:var(--gallery-fg)}
+body.gallery-flow #projects .orbit-instruction,body.gallery-flow #projects .orbit-hint,body.gallery-flow #projects .orbit-current>span:first-child{color:var(--gallery-muted)}
+body.gallery-flow #projects .orbit-progress{background:var(--line)}
+body.gallery-flow #projects .orbit-progress>span{background:var(--gallery-fg)}
+body.gallery-flow #projects .orbit-title{color:var(--gallery-fg)}
+body.gallery-flow #projects .orbit-scene{opacity:var(--gallery-reveal);translate:0 var(--gallery-lift);transition:none}
+body.gallery-flow #projects .ink-canvas{opacity:calc(.78 * var(--gallery-dark))}
+body.gallery-flow .site-header{background:rgb(var(--gallery-bg-rgb) / .94);border-color:rgb(var(--gallery-fg-rgb) / .08);color:var(--gallery-fg);transition:none}
+body.gallery-flow .wordmark{color:var(--gallery-fg)}
+body.gallery-flow .language-link{color:var(--gallery-muted)}
+body.gallery-flow .language-link.is-current,body.gallery-flow .contact-pill{background:var(--gallery-fg);color:var(--gallery-bg)}
+body.gallery-flow .contact-pill:hover{background:var(--gallery-fg);filter:brightness(.9)}
+body.gallery-flow .mobile-nav{background:var(--gallery-bg);border-color:var(--gallery-fg);color:var(--gallery-fg)}
+body.gallery-flow .mobile-nav a{border-color:var(--line)}
+body.gallery-flow #experience .experience-topline p{color:var(--gallery-fg)}
+body.gallery-flow #experience .experience-nudge{color:var(--gallery-muted)}
+body.gallery-flow #experience .experience-nudge span{color:var(--gallery-fg)}
+body.gallery-flow #experience .experience-word{color:var(--gallery-fg)}
+@media(max-width:700px){body.gallery-flow #experience .experience-topline p{background:rgb(var(--gallery-bg-rgb) / .94);box-shadow:0 0 5px 3px rgb(var(--gallery-bg-rgb) / .94)}}
+@media(prefers-reduced-motion:reduce){body.gallery-flow #projects .orbit-scene{translate:none;opacity:1}}
+@media print{.gallery-atmosphere{display:none}body.gallery-flow{--gallery-fg:#151716;--gallery-fg-rgb:21 23 22;--gallery-bg:#fff;--gallery-bg-rgb:255 255 255;--gallery-muted:#707570;background:white;color:#151716}body.gallery-flow #projects .orbit-scene{opacity:1;translate:none}}

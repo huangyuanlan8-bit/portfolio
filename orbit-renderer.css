@@ -1,0 +1,40 @@
+.orbit-canvas{display:none;position:absolute;inset:0;width:100%;height:100%;pointer-events:none;filter:drop-shadow(0 14px 17px #10181010)}
+.tilted-gallery{overflow-anchor:none}
+.webgl-orbit>.orbit-canvas{display:block}
+.tilted-gallery.orbit-enhanced .webgl-orbit{perspective:none}
+.tilted-gallery .webgl-orbit .orbit-world{transform-style:flat;pointer-events:none}
+.tilted-gallery.orbit-enhanced .webgl-orbit .orbit-card{margin:0;min-width:0;max-width:none;max-height:none;transform:none!important;transform-style:flat;outline-offset:0;pointer-events:auto;background:transparent}
+.webgl-orbit .orbit-card>.curved-face{display:none}
+.tilted-gallery .webgl-orbit .orbit-title{opacity:0}
+.tilted-gallery .orbit-scene:not(.webgl-orbit) .curved-face:not(:has(.curve-slice))>.orbit-art{visibility:visible}
+.webgl-orbit .orbit-card:focus-visible{outline:3px solid #65735d;background:#33442a09}
+.tilted-gallery .ink-canvas{opacity:.78;image-rendering:auto;filter:blur(7px);mix-blend-mode:screen}
+.tilted-gallery.orbit-enhanced .orbit-scene:not(.webgl-orbit){perspective:2100px}
+@media(min-width:901px){.tilted-gallery.orbit-enhanced .orbit-scene:not(.webgl-orbit) .orbit-card{top:50%}}
+@media(max-width:900px),(prefers-reduced-motion:reduce){.orbit-canvas{display:none!important}}
+
+/* Dark gallery; the page's sans serif is shared with the cover titles. */
+.tilted-gallery{--ink:#f3f3f0;--muted:#999e98;--line:#333632;background:#080909;color:#f3f3f0}
+.tilted-gallery .projects-sticky{background:#080909}
+.tilted-gallery .orbit-title,.tilted-gallery.orbit-enhanced .orbit-title{font:400 clamp(24px,2.1vw,32px)/1.1 var(--sans);font-size:clamp(24px,2.1vw,32px)!important;letter-spacing:-.04em;color:#f3f3f0;text-shadow:none}
+.tilted-gallery .project-section-top .chapter-kicker{color:#b8bdb7}
+.tilted-gallery .orbit-instruction,.tilted-gallery .orbit-hint,.tilted-gallery .orbit-current>span:first-child{color:#969c95}
+.tilted-gallery .orbit-progress{background:#333632}
+.tilted-gallery .orbit-progress>span{background:#d5d9d3}
+.tilted-gallery .orbit-card:focus-visible{outline-color:#d7dcd3}
+
+/* A tighter ring leaves the full-bleed backdrop visible around the cards. */
+.tilted-gallery.orbit-enhanced{height:calc(100svh + var(--orbit-travel,4) * 82.5svh)}
+.tilted-gallery .curved-face{aspect-ratio:1.6}
+.tilted-gallery .orbit-card[data-cover-layout=designed] .project-placeholder-name,.tilted-gallery .orbit-card[data-cover-layout=designed] .orbit-card-index{display:none}
+.tilted-gallery .orbit-card[data-cover-layout=designed] .orbit-art:after{display:none}
+.tilted-gallery .orbit-card[data-cover-layout=designed] .orbit-art>img{object-fit:cover}
+.tilted-gallery.orbit-enhanced .orbit-scene:not(.webgl-orbit){perspective:var(--orbit-camera,2100px);perspective-origin:50% 50%}
+.tilted-gallery.orbit-enhanced .orbit-scene:not(.webgl-orbit) .orbit-card{width:var(--card-width);top:50%}
+.tilted-gallery .curve-slice{transform:translateX(var(--shift-x,0px)) translateZ(var(--bend)) rotateY(var(--yaw))}
+@media(max-width:900px),(prefers-reduced-motion:reduce){.tilted-gallery.orbit-enhanced{height:auto}}
+
+.tilted-gallery .curve-slice:nth-child(2){border-radius:12px 0 0 12px}.tilted-gallery .curve-slice:last-child{border-radius:0 12px 12px 0}
+
+/* Increase spacing in the static layout without changing its side gutters. */
+@media(max-width:900px){.tilted-gallery:not(.orbit-enhanced) .orbit-card{margin-bottom:36px}}

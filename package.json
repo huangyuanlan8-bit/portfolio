@@ -1,0 +1,25 @@
+{
+  "name": "yuanlan-huang-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build-pages.mjs",
+    "build:pages": "node build-pages.mjs",
+    "dev": "node server.mjs",
+    "check": "node check-pages.mjs",
+    "build:journal": "node bundle-journal.mjs",
+    "test:transitions": "node test-transitions.mjs",
+    "test:awards": "node test-awards.mjs",
+    "test:project-media": "node test-project-image-ready.mjs",
+    "test": "node test-project-image-ready.mjs && node test-transitions.mjs && node test-awards.mjs"
+  },
+  "engines": {"node": ">=22"},
+  "dependencies": {
+    "react": "19.2.0",
+    "esbuild": "0.25.11",
+    "react-dom": "19.2.0",
+    "gsap": "3.13.0",
+    "@gsap/react": "2.1.2"
+  }
+}

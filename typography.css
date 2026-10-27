@@ -1,0 +1,88 @@
+/* Shared text roles. System fonts keep both language versions stable and local. */
+:root{
+ --font-cjk:"Microsoft YaHei","PingFang SC","Noto Sans SC";
+ --font-heading:Arial,"Helvetica Neue",var(--font-cjk),sans-serif;
+ --font-body:Arial,"Helvetica Neue",var(--font-cjk),sans-serif;
+ --font-ui:var(--font-body);
+ --font-meta:Consolas,"Courier New",var(--font-cjk),monospace;
+ --font-editorial:Georgia,"Times New Roman","Songti SC",SimSun,serif;
+ --font-hero:var(--font-editorial);--font-experience:var(--font-editorial);--font-quote:var(--font-editorial);--font-company:var(--font-editorial);
+ --font-contact:"Yuanlan Segment Display",var(--font-meta);
+ --sans:var(--font-body);--serif:var(--font-editorial);--mono:var(--font-meta);
+ --type-weight:400;
+ --type-section-size:clamp(43px,5.7vw,88px);
+ --type-project-size:clamp(42px,7.4vw,112px);
+ --type-subproject-size:clamp(30px,5.3vw,76px);
+ --type-entry-size:clamp(32px,4vw,64px);
+ --type-body-size:clamp(14px,1.15vw,16px);
+ --type-intro-size:clamp(15px,1.45vw,21px);
+ --type-aux-size:13px;--type-aux-tracking:.035em;
+ --type-leading:1.8;--type-title-leading:1.15;
+ --type-tracking:-.055em;--type-project-tracking:-.045em;
+}
+body[data-lang="zh"]{--type-tracking:-.035em;--type-project-tracking:-.025em}
+body{font-family:var(--font-body);font-weight:var(--type-weight);line-height:var(--type-leading)}
+h1,h2,h3,h4{font-family:var(--font-heading)}
+button,input,select,textarea{font-family:var(--font-ui)}
+.chapter:not(.note-page){max-width:none;margin-inline:0;padding-inline:var(--gutter)}
+:is(.chapter-heading h2,.journal-chapter>.journal-title){font:var(--type-weight) var(--type-section-size)/var(--type-title-leading) var(--font-heading);letter-spacing:var(--type-tracking)}
+:is(.portfolio-heading h1,.story-heading h1,.frame-heading h1,.case-intro h1){font:var(--type-weight) var(--type-project-size)/1.08 var(--font-heading);letter-spacing:var(--type-project-tracking)}
+.portfolio-collection-heading h2{font:var(--type-weight) var(--type-subproject-size)/var(--type-title-leading) var(--font-heading);letter-spacing:var(--type-project-tracking)}
+:is(.orbit-card-name h3,.project-meta h3,.project-placeholder-name,.orbit-current>span:last-child,.portfolio-next>a,.story-next a){font-family:var(--font-heading);font-weight:var(--type-weight);letter-spacing:var(--type-project-tracking)}
+.tilted-gallery .project-placeholder-name{font-family:var(--font-heading)}
+.journal-entry-copy h3{font:var(--type-weight) var(--type-entry-size)/1.2 var(--font-heading);letter-spacing:var(--type-tracking)}
+:is(.portfolio-intro,.story-heading p,.case-headline,.note-page-intro){font-family:var(--font-body);font-size:var(--type-intro-size);font-weight:var(--type-weight);line-height:var(--type-leading)}
+:is(.chapter-lede,.journal-entry-copy p,.story-step p,.case-body,.background-row p,.interest-lines p){font-family:var(--font-body);font-size:var(--type-body-size);font-weight:var(--type-weight);line-height:var(--type-leading)}
+:is(.simple-about .about-opening,.about-opening){font-family:var(--font-body);font-weight:var(--type-weight);line-height:var(--type-leading)}
+:is(.chapter-kicker,.eyebrow,.hero-kicker,.small-heading,.small-note,.note-date,.portfolio-topline,.portfolio-view-hint,.portfolio-film h2,.portfolio-next>span,.orbit-card-index,.orbit-instruction,.orbit-hint,.journal-frame-count,.badge-date,.contact-footer-details dt,.contact-footer-kicker,.contact-copyright){font-family:var(--font-meta);font-weight:var(--type-weight)}
+:is(.desktop-nav,.mobile-nav,.contact-pill,.language-link,.text-link,.cv-download,.explore-world,.photo-journal-back,.photo-controls [data-photo-view],.back-top){font-family:var(--font-meta)}
+.desktop-nav{font-size:11px;letter-spacing:.1em}
+.contact-pill,.language-link{font-size:10px}
+.contact-footer :is(.contact-email,.contact-resume,.contact-footer-logo){font-family:var(--font-ui)}
+/* Website utility text shares one readable scale; printed badge/film details
+   and the denser awards records keep their independent typographic roles. */
+:is(.chapter-kicker,.eyebrow,.hero-kicker,.small-heading,.small-note,
+ .about-directions,.about-picture>span,.background-row>span,
+ .note-date,.note-number,.note-status,.note-row time,
+ .text-link,.cv-download,.explore-world,.back-top,
+ .portfolio-topline,.portfolio-view-hint,.portfolio-film h2,
+ .portfolio-film-item figcaption,.portfolio-next>span,
+ .story-overview dt,.story-gallery figcaption,
+ .orbit-instruction,.orbit-hint,.orbit-current>span:first-child,
+ .journal-frame-count,.contact-footer-details dt,.contact-footer-kicker,
+ .contact-copyright,.contact-footer .back-top,
+ .photo-journal-back,.photo-gallery-title>span,.photo-gallery-footer>p,
+ .photo-frame-status,.photo-frame-status>span:last-child,
+ .photo-controls [data-photo-view],.photo-lightbox>header,
+ .photo-lightbox button,.photo-lightbox figcaption){
+ font-size:var(--type-aux-size);
+ letter-spacing:var(--type-aux-tracking);
+ color:var(--muted,#777);
+}
+:is(.text-link,.cv-download,.explore-world,.back-top,
+ .portfolio-topline a,.photo-journal-back,.photo-controls [data-photo-view],
+ .photo-lightbox button){transition:color .2s,text-decoration-color .2s}
+:is(.text-link,.cv-download,.explore-world,.back-top,
+ .portfolio-topline a,.photo-journal-back,.photo-controls [data-photo-view],
+ .photo-lightbox button):is(:hover,:focus-visible){color:var(--ink,#151716)}
+.contact-footer .back-top:is(:hover,:focus-visible){color:#fff}
+/* Intentionally independent display roles. */
+.hero-copy h1{font-family:var(--font-hero)}
+.hero-tagline,.journal-statement>p:first-child{font-family:var(--font-quote)}
+.experience-word,.experience-topline p{font-family:var(--font-experience)}
+.experience-playground .badge-company{font-family:var(--font-company)}
+.experience-playground .badge-role{font-family:var(--font-body);font-weight:var(--type-weight)}
+.experience-playground :is(.badge-person,.badge-company-zh,.badge-description,.badge-red-label){font-family:var(--font-body)}
+.contact-display{font-family:var(--font-contact)}
+.fold-text,.contact-shuffle,.contact-shuffle .shuffle-char{font-family:inherit;font-size:inherit;font-weight:inherit;line-height:inherit;letter-spacing:inherit}
+@media(max-width:1100px){.desktop-nav{font-size:10px}}
+@media(min-width:761px) and (max-width:1050px){.journal-entry-copy h3{font-size:clamp(28px,4vw,42px)}}
+@media(max-width:760px){
+ :root{--type-section-size:clamp(35px,9.5vw,48px);--type-project-size:clamp(42px,11vw,76px);--type-subproject-size:clamp(30px,8.5vw,48px);--type-entry-size:clamp(32px,10vw,43px);--type-intro-size:15px;--type-body-size:14px;--type-aux-size:12px}
+ .contact-pill,.language-link{font-size:9px}
+ .mobile-nav a{font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){
+ :is(.text-link,.cv-download,.explore-world,.back-top,.portfolio-topline a,
+ .photo-journal-back,.photo-controls [data-photo-view],.photo-lightbox button){transition:none}
+}

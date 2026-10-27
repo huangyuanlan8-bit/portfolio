@@ -1,0 +1,48 @@
+/* A single, quiet stage: transparent objects, soft shadows, oversized type. */
+.experience-playground{--badge-width:clamp(292px,24.5vw,348px);--badge-height:max(470px,calc(var(--badge-width)*1.52));--badge-neck:calc(var(--badge-width)*.20);position:relative;isolation:isolate;height:clamp(740px,calc(100svh - var(--header-height) - 20px),960px);padding:0;margin:0;background:#fff;border:0;overflow:visible;scroll-margin-top:var(--header-height)}
+.experience-topline{position:absolute;top:48px;left:6vw;right:6vw;display:flex;justify-content:space-between;gap:40px;z-index:5;pointer-events:none}
+.experience-topline p{font:400 clamp(14px,1.25vw,19px)/1.15 Georgia,'Times New Roman',serif;letter-spacing:-.035em;color:#181918}
+.experience-topline p:last-child{text-align:right}
+.experience-nudge{position:absolute;top:120px;left:50%;transform:translateX(-50%);font:10px/1.3 var(--mono);color:#858782;z-index:5;white-space:nowrap;pointer-events:none}
+.experience-nudge span{display:inline-block;margin-left:8px;color:#30332e}
+.experience-word-wrap{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.experience-word{position:absolute;left:50%;bottom:-.045em;transform:translateX(-50%);width:max-content;margin:0;font:400 25.4vw/.83 Georgia,'Times New Roman',serif;letter-spacing:-.074em;color:#070807;white-space:nowrap;user-select:none}
+.experience-playground .badge-field{position:absolute;inset:0;z-index:2;pointer-events:none}
+.experience-playground .experience-item{position:absolute;inset:0;pointer-events:none;min-width:0}
+.experience-playground .badge-stage{position:absolute;inset:0;width:100%;height:100%;max-width:none;margin:0;isolation:auto;perspective:none;pointer-events:none}
+.experience-playground .lanyard{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;pointer-events:none;z-index:1}
+.experience-playground .lanyard path{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.experience-playground .lanyard-bands{stroke-width:13.5;filter:drop-shadow(.5px 0 .4px #0005)}
+.experience-playground .lanyard-selvedges{stroke:#72756d;stroke-width:.65;opacity:.37}
+.experience-playground .lanyard-shadows{stroke:#262b24;stroke-width:15;opacity:.2}
+.experience-playground .badge-motion{position:absolute;left:0;top:0;width:var(--badge-width);height:calc(var(--badge-height) + var(--badge-neck));transform-origin:50% 0;transform-style:preserve-3d;will-change:transform;pointer-events:none;z-index:3}
+.experience-playground .badge-hardware{position:absolute;width:calc(var(--badge-width)*.16);height:calc(var(--badge-width)*.265);top:0;left:50%;transform:translateX(-50%) translateZ(2px);overflow:visible;z-index:6;filter:drop-shadow(2px 3px 2px #0002)}
+.experience-playground .id-badge{position:absolute;left:0;top:var(--badge-neck);width:var(--badge-width);height:var(--badge-height);padding:0;border:1px solid #c4c7c4b3;border-radius:calc(var(--badge-width)*.065);background:linear-gradient(122deg,#ffffff70,#ffffff0d 42%,#e2e5e24f 90%,#fff9);color:#343634;box-shadow:inset 0 0 0 2px #ffffffc4,inset -2px -2px 1px #b4bab42b,1px 2px 1px #b4b9b43b;cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none;pointer-events:auto;transform-origin:50% 0;overflow:visible;outline-offset:7px}
+.experience-playground .id-badge:before{content:'';position:absolute;inset:5px;border:1px solid #c7ccc577;border-radius:calc(var(--badge-width)*.048);box-shadow:inset 1px 1px 0 #fff,inset -1px -1px 0 #fff9;pointer-events:none}
+.experience-playground .id-badge:focus-visible{outline:2px solid #514df0;outline-offset:8px}
+.experience-playground .id-badge.is-dragging{cursor:grabbing;touch-action:none}
+.experience-playground .badge-hole{position:absolute;top:calc(var(--badge-width)*.076);width:calc(var(--badge-width)*.065);height:calc(var(--badge-width)*.065);border:1px solid #c7cdc5;border-radius:50%;background:#ffffff22;box-shadow:0 0 0 2px #fff9,inset 0 1px 2px #a5ada54d;z-index:2}
+.experience-playground .badge-hole-left{left:13%}.experience-playground .badge-hole-right{right:13%}
+.experience-playground .badge-slot{position:absolute;left:50%;top:calc(var(--badge-width)*.086);width:24%;height:calc(var(--badge-width)*.041);transform:translateX(-50%);border:1px solid #c3c9c2;border-radius:7px;background:#ffffff2b;box-shadow:inset 0 1px 2px #939c932b,0 1px 0 #fffc;z-index:2}
+.experience-playground .badge-seal{position:absolute;left:4%;right:4%;top:calc(var(--badge-width)*.155);height:3px;background:linear-gradient(#aab2a533,#fff9,#aab2a533);opacity:.75}
+.experience-playground .badge-paper{position:absolute;inset:calc(var(--badge-width)*.19) 12px 12px;height:auto;display:flex;flex-direction:column;padding:17px 18px 16px;overflow:hidden;border:1px solid #dedfdb;background:linear-gradient(112deg,#fff,#fdfdfc 63%,#f7f7f4);box-shadow:1px 2px 2px #00000008}
+.experience-playground .badge-person{display:flex;justify-content:space-between;align-items:center;font:400 11px/1.3 Arial,'Microsoft YaHei',sans-serif;color:#62665e;letter-spacing:.015em}
+.experience-playground .badge-person i{width:5px;height:5px;border-radius:50%;background:#d53531}
+.experience-playground .badge-employer{display:flex;flex-direction:column;margin-top:14px}
+.experience-playground .badge-company{display:block;font:400 54px/.95 Georgia,'Times New Roman',serif;letter-spacing:-.055em;color:#252824}
+.experience-playground .badge-company-zh{font:400 11px/1.4 Arial,'Microsoft YaHei',sans-serif;color:#73776e;margin-top:6px;letter-spacing:.08em}
+.experience-playground .badge-information{display:flex;flex-direction:column;margin-top:18px;padding:0}
+.experience-playground .badge-role{font:400 19px/1.2 Georgia,'Times New Roman','Microsoft YaHei',serif;letter-spacing:-.025em;color:#4c49ed;margin:0;white-space:normal}
+.experience-playground .badge-date{font:400 10.5px/1.6 var(--mono);color:#72776e;margin-top:7px;white-space:nowrap;letter-spacing:-.025em}
+.experience-playground .badge-description{display:block;margin-top:18px;font:400 14px/1.6 Arial,'Helvetica Neue','Microsoft YaHei',sans-serif;letter-spacing:-.012em;color:#50564c;text-align:left;text-wrap:pretty;overflow-wrap:normal}
+.experience-playground .badge-description:lang(zh-CN){line-height:1.9;letter-spacing:0}
+.experience-playground .badge-bottom{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:auto;padding-top:17px;font:8px/1.3 var(--mono);color:#8c9087;letter-spacing:.05em}
+.experience-playground .badge-red-label{display:inline-flex;background:#c93e38;color:white;border-radius:20px;padding:4px 6px;font:500 7px/1 Arial,sans-serif;letter-spacing:.03em}
+.experience-playground .badge-gloss{position:absolute;inset:0;border-radius:inherit;background:linear-gradient(118deg,#ffffff38 0%,transparent 21%,transparent 56%,#ffffff18 58%,transparent 61%,transparent 95%,#fff6);pointer-events:none;opacity:.6}
+.experience-playground .badge-shadow{position:absolute;left:0;top:0;width:var(--badge-width);height:var(--badge-height);border-radius:calc(var(--badge-width)*.065);background:#3c4238;filter:blur(14px);opacity:.15;will-change:transform;z-index:2;pointer-events:none}
+@media(min-width:1600px){.experience-word{font-size:25.1vw}}
+@media(min-width:701px) and (max-width:1000px){.experience-playground{--badge-width:clamp(268px,35vw,315px);--badge-height:490px;height:790px}.experience-topline{top:34px;left:5vw;right:5vw}.experience-topline p{font-size:14px}.experience-nudge{top:100px;font-size:9px}.experience-word{font-size:26vw;bottom:12px}.experience-playground .badge-paper{padding-left:16px;padding-right:16px}.experience-playground .badge-company{font-size:49px}.experience-playground .badge-role{font-size:18px}.experience-playground .badge-description{font-size:14px}}
+@media(max-width:700px){.experience-playground{--badge-width:clamp(282px,80vw,320px);--badge-height:max(474px,calc(var(--badge-width)*1.52));height:calc(2 * (var(--badge-height) + var(--badge-neck)) + 220px)}.experience-topline{top:28px;left:6vw;right:6vw;gap:24px}.experience-topline p{font-size:12px;line-height:1.22;max-width:46%;letter-spacing:-.035em;background:#fffffff2;box-shadow:0 0 5px 3px #fffffff2}.experience-topline p:last-child{max-width:48%}.experience-nudge{top:102px;font-size:8px}.experience-word{font-size:26.5vw;bottom:28px;line-height:1}.experience-playground .lanyard-bands{stroke-width:11}.experience-playground .lanyard-selvedges{stroke-width:.5}.experience-playground .lanyard-shadows{stroke-width:12}.experience-playground .badge-company{font-size:52px}.experience-playground .badge-role{font-size:19px}.experience-playground .badge-description{font-size:14px}.experience-playground .badge-shadow{filter:blur(10px)}}
+@media(prefers-reduced-motion:reduce){.experience-playground .badge-motion,.experience-playground .badge-shadow{will-change:auto}}
+.experience-playground .id-badge.is-pointer:focus-visible{outline:0}
+.experience-playground.badge-is-dragging,.experience-playground.badge-is-dragging *{cursor:grabbing!important;user-select:none!important;-webkit-user-select:none!important}

@@ -1,0 +1,16 @@
+/* Only the cover mesh and film canvas scale; typography and controls stay at 1:1. */
+.motion-view{position:fixed;inset:0;width:100vw;height:100%;height:100dvh;border:0;display:block;background:transparent;z-index:1000;color-scheme:normal}
+.motion-native-hidden{overflow:hidden!important}
+.motion-native-hidden>body>:not(.motion-view):not(.motion-layer):not(.motion-status):not(script):not(style){visibility:hidden!important;pointer-events:none!important}
+.motion-layer{position:fixed;inset:0;width:100%;height:100%;height:100dvh;z-index:10010;pointer-events:none}
+.motion-cover-surface{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.motion-animating>body{cursor:progress}
+.motion-animating>body>.motion-view{pointer-events:none}
+.motion-animating>body::after{content:'';position:fixed;inset:0;z-index:10009;pointer-events:auto;touch-action:none;cursor:progress;background:transparent}
+.motion-status{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:11000;background:#202321;color:white;border-radius:12px;padding:14px 20px;max-width:min(90vw,520px);font:14px/1.6 var(--sans,Arial,sans-serif);box-shadow:0 8px 32px #0002}
+.motion-status{display:flex;align-items:center;gap:18px}
+.motion-status button{flex:none;border:1px solid #818783;border-radius:5px;background:transparent;color:inherit;padding:5px 10px;font:inherit;cursor:pointer}
+.motion-status button:focus-visible{outline:2px solid white;outline-offset:3px}
+.motion-particle{position:fixed;z-index:10011;width:3px;height:3px;border-radius:50%;background:#e6e8e5;pointer-events:none}
+.portfolio-heading h1:focus,.journal-chapter:focus{outline:none}
+@media(prefers-reduced-motion:reduce){.motion-layer,.motion-particle{display:none}}
