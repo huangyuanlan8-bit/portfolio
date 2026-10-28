@@ -2,12 +2,11 @@
 
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText as GSAPSplitText } from 'gsap/SplitText';
 import { useGSAP } from '@gsap/react';
 import './Shuffle.css';
 
-gsap.registerPlugin(ScrollTrigger, GSAPSplitText, useGSAP);
+gsap.registerPlugin(GSAPSplitText, useGSAP);
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const BLUR_STEPS = 12;
@@ -56,20 +55,12 @@ const Shuffle = ({
   }, [onShuffleComplete]);
 
   useEffect(() => {
-    if ('fonts' in document) {
-      if (document.fonts.status === 'loaded') setFontsLoaded(true);
-      else document.fonts.ready.then(() => setFontsLoaded(true));
-    } else setFontsLoaded(true);
+    let cancelled=false;
+    const loaded=()=>{if(!cancelled)setFontsLoaded(true);};
+    if ('fonts' in document && document.fonts.status !== 'loaded') document.fonts.ready.then(loaded,loaded);
+    else loaded();
+    return ()=>{cancelled=true;};
   }, []);
-
-  const scrollTriggerStart = useMemo(() => {
-    const startPct = (1 - threshold) * 100;
-    const mm = /^(-?\d+(?:\.\d+)?)(px|em|rem|%)?$/.exec(rootMargin || '');
-    const mv = mm ? parseFloat(mm[1]) : 0;
-    const mu = mm ? mm[2] || 'px' : 'px';
-    const sign = mv === 0 ? '' : mv < 0 ? `-=${Math.abs(mv)}${mu}` : `+=${mv}${mu}`;
-    return `top ${startPct}%${sign}`;
-  }, [threshold, rootMargin]);
 
   useGSAP(
     () => {
@@ -555,38 +546,56 @@ const Shuffle = ({
         }
         const handleEnter = () => {
           if (playingRef.current) return;
-          build();
-          play();
+          try{build();play();}catch(error){fallback(error);}
         };
         el.addEventListener('mouseenter', handleEnter);
         unhover = () => el.removeEventListener('mouseenter', handleEnter);
       };
 
-      let created=false,awaitingVisibility=false,resizeFrame=0;
-      const canReveal=()=>!document.documentElement.classList.contains('motion-native-hidden')&&window.frameElement?.style.visibility!=='hidden'&&window.frameElement?.style.display!=='none';
-      const create = () => {
-        if(!canReveal()){awaitingVisibility=true;return;}
-        awaitingVisibility=false;created=true;
-        build();
-        play();
-        armHover();
-        setReady(true);
+      let created=false,resizeFrame=0,checkFrame=0,observer=null,failed=false;
+      const canReveal=()=>window.PortfolioRuntime?.isActive()!==false&&!document.hidden&&!document.documentElement.classList.contains('motion-native-hidden')&&window.frameElement?.style.visibility!=='hidden'&&window.frameElement?.style.display!=='none';
+      const fallback=error=>{
+        failed=true;removeHover();teardown();el.textContent=text;el.dataset.shuffleState='fallback';setReady(true);
+        console.warn('Shuffle keeps its readable text.',error);
       };
-
-      const st = ScrollTrigger.create({
-        trigger: el,
-        start: scrollTriggerStart,
-        once: triggerOnce,
-        onEnter: create
-      });
-      const resume=()=>{ScrollTrigger.refresh();if(awaitingVisibility)create();};
+      const create = () => {
+        if(failed||!canReveal()||playingRef.current||created&&triggerOnce)return;
+        try{build();play();armHover();created=true;if(triggerOnce)observer?.disconnect();}
+        catch(error){fallback(error);}
+      };
+      // This island can mount while the page's GSAP ScrollTriggers are disabled.
+      // Observe the real viewport instead of creating a permanently inert trigger.
+      const triggerLine=()=>{
+        const match=/^(-?\d+(?:\.\d+)?)(px|em|rem|%)?$/.exec(rootMargin||'');
+        const value=match?Number(match[1]):0,unit=match?.[2]||'px';
+        const offset=value*(unit==='%'?innerHeight/100:unit==='rem'?parseFloat(getComputedStyle(document.documentElement).fontSize):unit==='em'?parseFloat(getComputedStyle(el).fontSize):1);
+        const line=innerHeight*(1-Math.max(0,Math.min(1,threshold)))+offset;
+        // A short mobile footer may reach the page bottom before its title can
+        // cross the requested viewport line. Keep that last visible position reachable.
+        const maxScroll=Math.max(0,document.documentElement.scrollHeight-innerHeight);
+        const lastTop=el.getBoundingClientRect().top+scrollY-maxScroll;
+        return Math.min(innerHeight,Math.max(line,lastTop+1));
+      };
+      const check=()=>{checkFrame=0;const rect=el.getBoundingClientRect();if(rect.width>0&&rect.bottom>0&&rect.top<Math.min(innerHeight,triggerLine()))create();};
+      const scheduleCheck=()=>{if(!checkFrame)checkFrame=requestAnimationFrame(check);};
+      const observe=()=>{
+        observer?.disconnect();
+        if(typeof IntersectionObserver==='function'){
+          observer=new IntersectionObserver(scheduleCheck,{rootMargin:`0px 0px ${Math.min(0,triggerLine()-innerHeight)}px 0px`});observer.observe(el);
+        }
+        scheduleCheck();
+      };
+      setReady(true);el.dataset.shuffleState='idle';try{observe();}catch(error){fallback(error);}
+      const resume=scheduleCheck;
       const suspend=()=>{if(playingRef.current){tlRef.current?.kill();playingRef.current=false;cells.forEach(settle);el.dataset.shuffleState='settled';}};
-      const resize=()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>{if(created){build();cells.forEach(settle);el.dataset.shuffleState='settled';}ScrollTrigger.refresh();});};
+      const resize=()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>{try{if(created){build();cells.forEach(settle);el.dataset.shuffleState='settled';}observe();}catch(error){fallback(error);}});};
       window.addEventListener('portfolio:resume',resume);window.addEventListener('portfolio:suspend',suspend);window.addEventListener('resize',resize,{passive:true});
+      document.addEventListener('visibilitychange',scheduleCheck);
+      if(typeof IntersectionObserver!=='function')window.addEventListener('scroll',scheduleCheck,{passive:true});
 
       return () => {
-        cancelAnimationFrame(resizeFrame);window.removeEventListener('portfolio:resume',resume);window.removeEventListener('portfolio:suspend',suspend);window.removeEventListener('resize',resize);
-        st.kill();
+        cancelAnimationFrame(resizeFrame);cancelAnimationFrame(checkFrame);observer?.disconnect();window.removeEventListener('portfolio:resume',resume);window.removeEventListener('portfolio:suspend',suspend);window.removeEventListener('resize',resize);
+        document.removeEventListener('visibilitychange',scheduleCheck);window.removeEventListener('scroll',scheduleCheck);
         removeHover();
         teardown();
         svg?.remove();
@@ -600,7 +609,8 @@ const Shuffle = ({
         duration,
         maxDelay,
         ease,
-        scrollTriggerStart,
+        threshold,
+        rootMargin,
         fontsLoaded,
         shuffleDirection,
         shuffleTimes,

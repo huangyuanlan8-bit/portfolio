@@ -7,10 +7,7 @@
   font-size: 4rem;
   font-family: 'Press Start 2P', sans-serif;
   text-transform: uppercase;
-  visibility: hidden;
-}
-
-.shuffle-parent.is-ready {
+  /* Text is the fallback, not a loading placeholder for the animation. */
   visibility: visible;
 }
 
